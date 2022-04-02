@@ -10,14 +10,17 @@
 <body>
     <div class="container">
         <h1 style="color:white">
-        <a class="link-light" href="/ranking/">Rankings</a> >
-        <a class="link-light" href="/ranking/">{{ranking_name}}</a> Events</h1>
+        <a href="/ranking/">Rankings</a>
+            <span> > </span>
+        <a href="/ranking/"> {{ranking_name}}</a>
+            <span>> Events</span></h1>
         <p class="lead"></p>
         <table class="table table-striped table-dark">
             {% for e in events %}
             <tr>
-                <td><span style="color:white">{{e.tournament}}</span></td>
-                <td><span style="color:white">{{e.name}}</span></td>
+                <td><a href="{{e.url}}" style="color:white">{{e.tournament}}</a></td>
+                <td><a href="{{e.url}}" style="color:white">{{e.name}}</a></td>
+                <td><span style="color:white">Matches: {{e.set_count}}</span></td>
                 <td><span style="color:white">{{e.start_at}}</span></td>
             </tr>
             {% endfor %}

@@ -73,6 +73,10 @@ def parse_event_url(full_url: str) -> Dict:
     return {'tournament': tournament_slug, 'event': event_slut}
 
 
+def get_player_attributes(player_slugs: str) -> Dict:
+    return {}
+
+
 def get_event_attributes(url_slugs, per_page=20) -> Dict[str, int]:
     variables = """
         {{
@@ -135,7 +139,7 @@ def parse_node_slot(node_slots: List, node_set) -> Dict:
                 raise InvalidSetNode(node_slot)
             standing_slots.append({
                 'score': node_slot['standing']['stats']['score']['value'],
-                'id': node_slot['entrant']['participants'][0]['user']['id']
+                'id': node_slot['entrant']['participants'][0]['user']['slug']
             })
             if highest_score < node_slot['standing']['stats']['score']['value']:  # if highest score
                 highest_score_index = ns_index
@@ -195,7 +199,6 @@ def get_set_pages_from_event(url_slugs: Dict, page_count: int, per_page=20) -> L
                                 participants {
                                     gamerTag
                                     user {
-                                        id
                                         slug
                                     }
                                 }

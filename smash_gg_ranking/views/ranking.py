@@ -23,17 +23,16 @@ def get_rankings():
             ranking_algorithm_name = session.query(RankingAlgorithm.name).where(
                 RankingAlgorithm.id == r.ranking_algorithms_id).first()
             ranking_events = session.query(RankingEvent).where(RankingEvent.ranking_id == r.id).all()
-            event_info = query.get_event_attributes(query.parse_event_url(ranking_events[0].event_url))
+            event_info = graph_query.get_event_attributes(graph_query.parse_event_url(ranking_events[0].event_url))
             ranking_events_subquery = select(RankingEvent.id).filter(RankingEvent.ranking_id == r.id)
             set_count = session.query(RankingSet.id).filter(
                 RankingSet.ranking_event_id.in_(ranking_events_subquery)).count()
-            logger.debug(set_count)
             rank_views.append({
                 "name": r.name,
                 "id": r.id,
                 "videogame": event_info['videogame'],
                 "event_count": len(ranking_events),
-                "player_count": event_info['entrants_count'],
+                "participant_count": event_info['entrants_count'],
                 "match_count": set_count,
                 "ranking_algorithm_name": ranking_algorithm_name[0]
             })

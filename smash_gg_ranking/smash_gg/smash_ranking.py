@@ -88,10 +88,10 @@ def calculate_ranking(ranking_name):
         ranking_sets = session.query(RankingSet).filter(RankingSet.ranking_event_id.in_(ranking_events_subquery))
         participant_points = elo.update_ranking_set_points(ranking_sets)
 
-        for pr_id in participant_points.keys(): # for each participant points
+        for pr_id in participant_points.keys():  # for each participant points
             participant_ranking = session.query(ParticipantRanking).where(  # get participant ranking
                 and_(
-                    ParticipantRanking.id == pr_id,
+                    ParticipantRanking.participant_id == pr_id,
                     ParticipantRanking.ranking_id == ranking.id
                 )).first()
             if participant_ranking is None:  # if participant has no points

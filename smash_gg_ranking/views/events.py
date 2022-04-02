@@ -1,5 +1,5 @@
 import logging
-
+from sqlalchemy import select
 
 from db import db
 from db.models import Ranking, RankingEvent, RankingSet
@@ -19,15 +19,16 @@ def get_events(ranking_id: int):
     with session() as session:
         ranking = session.query(Ranking).where(Ranking.id == ranking_id).first()
         ranking_events = session.query(RankingEvent).where(RankingEvent.ranking_id == ranking_id).all()
-        logger.debug("ranking_events={}".format(ranking_events))
         for re in ranking_events:
-            event = query.get_event_attributes(query.parse_event_url(re.event_url))
+            set_count = session.query(RankingSet.id).where(RankingSet.ranking_event_id==re.id).count()
+            event = graph_query.get_event_attributes(graph_query.parse_event_url(re.event_url))
             events.append({
+                "url": re.event_url,
                 "tournament": event['tournament'],
                 "name": event['name'],
+                "set_count": set_count,
                 "start_at": event['start_at'].strftime("%m/%d/%Y")
             })
-        logger.debug("events={}".format(events))
 
     return ranking.name, events
 
