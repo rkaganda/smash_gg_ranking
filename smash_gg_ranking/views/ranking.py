@@ -3,7 +3,7 @@ from sqlalchemy import select
 
 from db import db
 from db.models import Ranking, RankingEvent, RankingSet, RankingAlgorithm
-from smash_gg import query
+from smash_gg import graph_query
 from config import config
 
 logger = logging.getLogger('views/ranking')

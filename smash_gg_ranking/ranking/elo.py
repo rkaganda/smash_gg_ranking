@@ -22,7 +22,7 @@ def calc_elo_change(winner_elo: float, winner_score: int,  loser_elo: float, los
     return winner_change, loser_change
 
 
-def update_ranking_set_points(ranking_sets: List[RankingSet]):
+def update_ranking_set_points(ranking_sets: List[RankingSet]) -> Dict:
     participants_elo = {}  # store teams as through matches
     for r_set in ranking_sets:
         if r_set.winner_id not in participants_elo.keys():  # if no elo
@@ -40,4 +40,6 @@ def update_ranking_set_points(ranking_sets: List[RankingSet]):
         # add elo to current elo
         participants_elo[r_set.winner_id] = participants_elo[r_set.winner_id] + r_set.winner_change
         participants_elo[r_set.loser_id] = participants_elo[r_set.loser_id] + r_set.loser_change
+
+    return participants_elo
 

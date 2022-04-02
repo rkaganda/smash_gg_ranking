@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, Float, ForeignKey, Index, DateTime, String
+from sqlalchemy import Column, Integer, Float, ForeignKey, Index, DateTime, String, Boolean
 
 from config import config
 from db.db import Base
@@ -42,6 +42,15 @@ class RankingSet(Base):
     loser_points = Column(Float)
     loser_change = Column(Float)
     __table_args__ = (Index('ranking_set_index', "ranking_event_id", "set_id"),)
+
+
+class ParticipantRanking(Base):
+    __tablename__ = "{}_participants_ranking".format(config.settings['db_suffix'])
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    participant_id = Column(Integer, nullable=False)
+    ranking_id = Column(Integer, ForeignKey("{}_ranking.id".format(config.settings['db_suffix'])))
+    participant_points = Column(Float, nullable=False)
+    up_from_last = Column(Boolean)
 
 
 Base.metadata.create_all(engine)

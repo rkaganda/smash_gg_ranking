@@ -10,7 +10,7 @@ import time
 
 from config import config
 
-logger = logging.getLogger('query')
+logger = logging.getLogger('graph_query')
 logger.setLevel(config.settings['log_level'])
 handler = logging.FileHandler(filename=config.settings['log_path'], encoding='utf-8', mode='a')
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
@@ -41,11 +41,11 @@ def smash_gg_query(query: str, variables: str):
 
         if r.status_code != 200:
             if r.status_code == 429:
-                logger.error("query RATE LIMIT: {} \n response:{}\n"
+                logger.error("graph_query RATE LIMIT: {} \n response:{}\n"
                              .format(r.status_code, r.text))
                 time.sleep(60)
             else:
-                logger.error("smash query FAILED \n response:{}\n {} \n query:\n{} \n variables:{}\n "
+                logger.error("smash graph_query FAILED \n response:{}\n {} \n graph_query:\n{} \n variables:{}\n "
                              .format(r.text, r.status_code, query, variables, ))
                 raise SmashGGQueryFailed(r.text)
         else:

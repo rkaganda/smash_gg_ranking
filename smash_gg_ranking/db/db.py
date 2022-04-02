@@ -1,6 +1,7 @@
 import sqlalchemy as sqla
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+import psycopg2
 
 import logging
 
@@ -14,6 +15,7 @@ handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(me
 logger.addHandler(handler)
 
 Base = declarative_base()
+Base.metadata.schema = config.settings['db_schema']
 engine = sqla.create_engine(config.settings['db_url'])
 
 
