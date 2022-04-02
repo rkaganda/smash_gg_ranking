@@ -17,8 +17,10 @@
                 <td><span style="color:white" >{{r.name}}</span></td>
                 <td><span style="color:white">{{r.videogame.display_name}}</span></td>
                 <td><a class=" " href="/ranking/events/{{r.id}}">events: {{r.event_count}}</a></td>
-                <td><a class=" ">players: {{r.player_count}}</a></td>
-                <td><a class=" ">matches: {{r.match_count}}</a></td>
+                <td><span class=" ">players: {{r.player_count}}</span></td>
+                <td><span class=" ">matches: {{r.match_count}}</span></td>
+                <td><span class=" ">type: {{r.match_count}}</span></td>
+                <td><span class=" ">type: {{r.ranking_algorithm_name}}</span></td>
             </tr>
             {% endfor %}
         </table>

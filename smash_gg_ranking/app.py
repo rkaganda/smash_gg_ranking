@@ -1,16 +1,14 @@
-from flask import Flask
+from flask import Flask, redirect
 from flask import render_template
 
-from views import ranking
+from views import ranking, events
 
-from config import config
 app = Flask(__name__)
 
 
-# @app.route('/hello/')
-# @app.route('/hello/<name>')
-# def hello(name=None):
-#     return render_template('hello.html', name=name)
+@app.route('/')
+def home():
+    return redirect("/ranking/", code=302)
 
 
 @app.route('/ranking/')
@@ -21,7 +19,7 @@ def view_rankings():
 
 @app.route('/ranking/events/<ranking_id>')
 def view_events(ranking_id=None):
-    ranking_name, events = ranking.get_events(ranking_id)
-    return render_template('events.html', events=events, ranking_name=ranking_name)
+    ranking_name, event_sets = events.get_events(ranking_id)
+    return render_template('events.html', events=event_sets, ranking_name=ranking_name)
 
 
