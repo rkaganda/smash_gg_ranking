@@ -49,6 +49,9 @@ def add_ranking(ranking_name: str, ranking_algorithm_name: str, videogame_id: in
 
 
 def add_event_to_ranking(full_url, ranking_name):
+    # get users in event
+    event_users = graph_query.get_users_from_event(graph_query.parse_event_url(full_url))
+
     event, ranking_event_sets = graph_query.get_event_id_and_sets(full_url)
 
     ranking_sets = []
@@ -62,6 +65,9 @@ def add_event_to_ranking(full_url, ranking_name):
                                                                               ranking.videogame_id))
             logger.exception(e)
             raise e
+        for event_user in event_users:
+            session.merge(Participant(**event_user))
+
         ranking_event = RankingEvent(event_id=event['event_id'], event_url=full_url, ranking_id=ranking.id)
         session.add(ranking_event)
         session.flush()
@@ -112,21 +118,6 @@ def calculate_ranking(ranking_name):
                     participant_ranking.up_from_last = False
                 else:
                     participant_ranking.up_from_last = None
-        session.commit()
-        session.close()
-
-
-def populate_users_from_events():
-    session = db.get_session()
-
-    with session() as session:
-        ranking_events = session.query(RankingEvent).all()
-
-        for re in ranking_events:
-            print(re.event_url)
-            event_users = graph_query.get_users_from_event(graph_query.parse_event_url(re.event_url))
-            for eu in event_users:
-                par = session.merge(Participant(**eu))
         session.commit()
         session.close()
 
