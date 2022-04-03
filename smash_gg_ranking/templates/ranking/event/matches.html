@@ -29,10 +29,10 @@
                 {% for set in event_sets %}
                 <tr>
                     <td><span style="color:white">{{set.winner_score}} - {{set.loser_score}}</span></td>
-                    <td><a href="/ranking/{{ranking_data.id}}/event/{{event_data.id}}/participant/{{set.winner_id}}/matches">{{set.winner_id}}</a></td>
+                    <td><a href="/ranking/{{ranking_data.id}}/event/{{event_data.id}}/participant/{{set.winner_id}}/matches">{{set.winner_gamertag}}</a></td>
                     <td><span style="color:white">{{set.winner_points}}</span></td>
                     <td><span style="color:green">{{set.winner_change}}</span></td>
-                    <td><a href="/ranking/{{ranking_data.id}}/event/{{event_data.id}}/participant/{{set.loser_id}}/matches">{{set.loser_id}}</a></td>
+                    <td><a href="/ranking/{{ranking_data.id}}/event/{{event_data.id}}/participant/{{set.loser_id}}/matches">{{set.loser_gamertag}}</a></td>
                     <td><span style="color:white">{{set.loser_points}}</span></td>
                     <td><span style="color:red">{{set.loser_change}}</span></td>
                 </tr>

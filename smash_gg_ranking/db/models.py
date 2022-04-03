@@ -55,4 +55,11 @@ class ParticipantRanking(Base):
     up_from_last = Column(Boolean)
 
 
+class Participant(Base):
+    __tablename__ = "{}_participants".format(config.settings['db_suffix'])
+    id = Column(String, primary_key=True)
+    smash_gg_url = Column(String)
+    gamer_tag = Column(String)
+
+
 Base.metadata.create_all(engine)

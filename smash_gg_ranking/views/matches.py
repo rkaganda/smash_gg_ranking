@@ -2,7 +2,7 @@ import logging
 from sqlalchemy import and_, or_
 
 from db import db
-from db.models import Ranking, RankingSet, RankingEvent
+from db.models import Ranking, RankingSet, RankingEvent, Participant
 from smash_gg import graph_query
 from config import config
 
@@ -24,13 +24,22 @@ def get_ranking_sets(ranking_id: int, event_id: int):
         event = session.query(RankingEvent).where(RankingEvent.id == event_id).first()
         event = event.__dict__
         event['attrib'] = graph_query.get_event_attributes(graph_query.parse_event_url(event['event_url']))
+
+        # TODO refactor to mapping
+        participants = session.query(Participant).all()
+        par_tags = {}
+        for par in participants:
+            par_tags[par.id] = par.gamer_tag
+
         for rs in ranking_sets:
             sets.append({
                 "winner_id": rs.winner_id,
+                "winner_gamertag": par_tags[rs.winner_id],
                 "winner_score": rs.winner_score,
                 "winner_points": rs.winner_points,
                 "winner_change": rs.winner_change,
                 "loser_id": rs.loser_id,
+                "loser_gamertag": par_tags[rs.loser_id],
                 "loser_score": rs.loser_score,
                 "loser_points": rs.loser_points,
                 "loser_change": rs.loser_change,
@@ -42,9 +51,6 @@ def get_ranking_sets(ranking_id: int, event_id: int):
 
 def get_participant_sets(ranking_id: int, participant_id: str):
     logging.debug("participant_id={}".format(participant_id))
-    participant_data = {
-        "id": participant_id
-    }
     sets = []
     session = db.get_session()
     with session() as session:
@@ -55,13 +61,26 @@ def get_participant_sets(ranking_id: int, participant_id: str):
                  RankingSet.ranking_id == ranking.id
                  )
         ).order_by(RankingSet.set_datetime.desc())
+
+        # TODO refactor to mapping
+        participants = session.query(Participant).all()
+        par_tags = {}
+        for par in participants:
+            par_tags[par.id] = par.gamer_tag
+        participant_data = {
+            "id": participant_id,
+            "gamertag": par_tags[participant_id]
+        }
+
         for ps in participant_sets:
             sets.append({
                 "winner_id": ps.winner_id,
+                "winner_gamertag": par_tags[ps.winner_id],
                 "winner_score": ps.winner_score,
                 "winner_points": ps.winner_points,
                 "winner_change": ps.winner_change,
                 "loser_id": ps.loser_id,
+                "loser_gamertag": par_tags[ps.loser_id],
                 "loser_score": ps.loser_score,
                 "loser_points": ps.loser_points,
                 "loser_change": ps.loser_change,
@@ -73,9 +92,6 @@ def get_participant_sets(ranking_id: int, participant_id: str):
 
 def get_event_participant_sets(ranking_id: int, event_id: int, participant_id: str):
     logging.debug("participant_id={}".format(participant_id))
-    participant_data = {
-        "id": participant_id
-    }
     sets = []
     session = db.get_session()
     with session() as session:
@@ -89,12 +105,26 @@ def get_event_participant_sets(ranking_id: int, event_id: int, participant_id: s
                  RankingSet.ranking_event_id == event_id
                  )
         ).order_by(RankingSet.set_datetime.desc())
+
+        # TODO refactor to mapping
+        participants = session.query(Participant).all()
+        par_tags = {}
+        for par in participants:
+            par_tags[par.id] = par.gamer_tag
+
+        participant_data = {
+            "id": participant_id,
+            "gamertag": par_tags[participant_id]
+        }
+
         for ps in participant_sets:
             sets.append({
                 "winner_id": ps.winner_id,
+                "winner_gamertag": par_tags[ps.winner_id],
                 "winner_score": ps.winner_score,
                 "winner_points": ps.winner_points,
                 "winner_change": ps.winner_change,
+                "loser_gamertag": par_tags[ps.loser_id],
                 "loser_id": ps.loser_id,
                 "loser_score": ps.loser_score,
                 "loser_points": ps.loser_points,

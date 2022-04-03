@@ -3,7 +3,7 @@ import logging
 
 from smash_gg_ranking.config import config
 from smash_gg_ranking.smash_gg import graph_query
-from smash_gg_ranking.db.models import Ranking, RankingSet, RankingEvent, RankingAlgorithm, ParticipantRanking
+from smash_gg_ranking.db.models import Ranking, RankingSet, RankingEvent, RankingAlgorithm, ParticipantRanking, Participant
 from smash_gg_ranking.db import db
 from smash_gg_ranking.ranking import elo
 
@@ -114,3 +114,22 @@ def calculate_ranking(ranking_name):
                     participant_ranking.up_from_last = None
         session.commit()
         session.close()
+
+
+def populate_users_from_events():
+    session = db.get_session()
+
+    with session() as session:
+        ranking_events = session.query(RankingEvent).all()
+
+        for re in ranking_events:
+            print(re.event_url)
+            event_users = graph_query.get_users_from_event(graph_query.parse_event_url(re.event_url))
+            for eu in event_users:
+                par = session.merge(Participant(**eu))
+        session.commit()
+        session.close()
+
+
+
+

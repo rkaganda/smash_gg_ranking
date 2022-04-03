@@ -73,10 +73,6 @@ def parse_event_url(full_url: str) -> Dict:
     return {'tournament': tournament_slug, 'event': event_slut}
 
 
-def get_player_attributes(player_slugs: str) -> Dict:
-    return {}
-
-
 def get_event_attributes(url_slugs, per_page=20) -> Dict[str, int]:
     variables = """
         {{
@@ -181,6 +177,89 @@ def parse_set_nodes(set_nodes: List) -> List:
     return event_sets
 
 
+def parse_entrant_set(entrant_set: List) -> List:
+    user_set = []
+    for es in entrant_set:
+        if 'participants' in es:
+            for par in es['participants']:
+                if par['user']['slug'] is not None:
+                    user_set.append({
+                        'id': par['user']['slug'].replace("/", "_"),
+                        'gamer_tag': par['gamerTag'],
+                        'smash_gg_url': "http://www.smash.gg/{}".format(par['user']['slug'])
+                    })
+    return user_set
+
+
+def get_users_from_event(url_slugs: Dict, per_page=40) -> List:
+    page_query = """
+        query EventEntrants($event_slug: String, $perPage: Int!) {
+          event(slug: $event_slug) {
+            id
+            name
+            entrants(query: {
+              perPage: $perPage,
+            }) {
+              pageInfo {
+                total
+                totalPages
+              }
+            }
+          }
+        }
+    """
+    page_query_variables = """
+                    {{
+                        "event_slug":"tournament/{}/event/{}",
+                        "perPage": {}
+                    }}
+                    """.format(url_slugs['tournament'], url_slugs['event'], per_page)
+    page_count = json.loads(smash_gg_query(page_query, page_query_variables))  # query smash_gg
+    page_count = page_count['data']['event']['entrants']['pageInfo']['totalPages']
+
+    query = """
+    query EventEntrants($event_slug: String, $page: Int!, $perPage: Int!) {
+        event(slug: $event_slug) {
+            id
+            name
+            entrants(query: {
+              page: $page
+              perPage: $perPage
+            }) {
+              nodes {
+                id
+                participants {
+                  id
+                  gamerTag
+                  user {
+                    slug
+                  }
+                }
+              }
+            }
+        }
+    }
+    """
+    user_sets = []
+    if config.settings['show_progress'] == 'True':
+        pages_enum = tqdm(range(1, page_count+1))
+    else:
+        pages_enum = range(1, page_count+1)
+    for page in pages_enum:
+        variables = """
+                {{
+                    "event_slug":"tournament/{}/event/{}",
+                    "page": {},
+                    "perPage": {}
+                }}
+                """.format(url_slugs['tournament'], url_slugs['event'], page, per_page)
+        user_page = json.loads(smash_gg_query(query, variables))  # query smash_gg for the event page
+        user_sets.append(parse_entrant_set(user_page['data']['event']['entrants']['nodes']))  # parse user
+
+    user_sets = list(itertools.chain.from_iterable(user_sets))  # concatenate event page lists
+    return user_sets
+
+
 def get_set_pages_from_event(url_slugs: Dict, page_count: int, per_page=20) -> List:
     query = """
         query EventQuery($event_slug: String, $page: Int, $perPage: Int) {
@@ -214,9 +293,9 @@ def get_set_pages_from_event(url_slugs: Dict, page_count: int, per_page=20) -> L
         """
     event_sets = []
     if config.settings['show_progress'] == 'True':
-        pages_enum = tqdm(range(0, page_count))
+        pages_enum = tqdm(range(1, page_count+1))
     else:
-        pages_enum = range(0, page_count)
+        pages_enum = range(1, page_count+1)
     for page in pages_enum:
         variables = """
             {{

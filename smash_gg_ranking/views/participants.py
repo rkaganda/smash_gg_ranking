@@ -2,7 +2,7 @@ import logging
 from sqlalchemy import and_, or_
 
 from db import db
-from db.models import Ranking, RankingEvent, ParticipantRanking, RankingSet
+from db.models import Ranking, RankingEvent, ParticipantRanking, RankingSet, Participant
 from smash_gg import graph_query
 from config import config
 
@@ -21,6 +21,13 @@ def get_ranking_participants(ranking_id: int):
         participant_ranking = session.query(ParticipantRanking).where(
             ParticipantRanking.ranking_id == ranking_id).order_by(ParticipantRanking.participant_points.desc()).all()
         rank = 1
+
+        # TODO refactor to mapping
+        participants_data = session.query(Participant).all()
+        par_tags = {}
+        for par in participants_data:
+            par_tags[par.id] = par.gamer_tag
+
         for pr in participant_ranking:
             set_count = session.query(RankingSet).where(
                 and_(or_(RankingSet.loser_id == pr.participant_id, RankingSet.winner_id == pr.participant_id),
@@ -30,6 +37,7 @@ def get_ranking_participants(ranking_id: int):
             participants.append({
                 "rank": rank,
                 "participant_id": pr.participant_id,
+                "participant_gamertag": par_tags[pr.participant_id],
                 "participant_points": pr.participant_points,
                 "set_count": set_count,
                 "up_from_last": pr.up_from_last

@@ -16,7 +16,7 @@
                 <span>> </span>
             <a href="/ranking/{{ ranking_data.id }}/event/{{event_data.id}}/matches">{{event_data.attrib.tournament}} {{event_data.attrib.name}}</a>
                 <span>> </span>
-            <span> {{participant_data['id']}}</span>
+            <span> {{participant_data.gamertag}}</span>
         </h2>
         <p class="lead"></p>
         <table class="table table-striped table-dark">
@@ -30,22 +30,22 @@
                     <tr>
                         <td><span style="color:green">{{set.winner_score}} - {{set.loser_score}}</span></td>
                         <!--
-                        <td><a href="https://www.smash.gg/{{ set.winner_id | replace('_','/') }}" target="_blank">{{set.winner_id}}</a></td>
+                        <td><a href="https://www.smash.gg/{{ set.winner_id | replace('_','/') }}" target="_blank">{{set.winner_gamertag}}</a></td>
                         -->
-                        <td><span>{{set.winner_id}}</span></td>
+                        <td><span>{{set.winner_gamertag}}</span></td>
                         <td><span style="color:white">{{set.winner_points}}</span></td>
                         <td><span style="color:green">{{set.winner_change}}</span></td>
-                        <td><a href="/ranking/{{ranking_data.id}}/participant/{{set.loser_id}}/matches" target="_blank">{{set.loser_id}}</a></td>
+                        <td><a href="/ranking/{{ranking_data.id}}/participant/{{set.loser_id}}/matches" target="_blank">{{set.loser_gamertag}}</a></td>
                         <td><span style="color:white">{{set.loser_points}}</span></td>
                         <td><span style="color:red">{{set.loser_change}}</span></td>
                     </tr>
                 {% else %}
                     <tr>
                         <td><span style="color:red">{{set.loser_score}} - {{set.winner_score}}</span></td>
-                        <td><span>{{set.loser_id}}</span></td>
+                        <td><span>{{set.loser_gamertag}}</span></td>
                         <td><span style="color:white">{{set.loser_points}}</span></td>
                         <td><span style="color:red">{{set.loser_change}}</span></td>
-                        <td><a href="/ranking/{{ranking_data.id}}/participant/{{set.winner_id}}/matches">{{set.winner_id}}</a></td>
+                        <td><a href="/ranking/{{ranking_data.id}}/participant/{{set.winner_id}}/matches">{{set.winner_gamertag}}</a></td>
                         <td><span style="color:white">{{set.winner_points}}</span></td>
                         <td><span style="color:green">{{set.winner_change}}</span></td>
                     </tr>

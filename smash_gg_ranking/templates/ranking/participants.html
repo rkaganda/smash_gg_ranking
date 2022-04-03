@@ -25,7 +25,7 @@
             {% for p in participants %}
             <tr>
                 <td><span>#{{p.rank}}</span></td>
-                <td><a href="/ranking/{{ranking_data.id}}/participant/{{p.participant_id}}/matches" >{{p.participant_id}}</a></td>
+                <td><a href="/ranking/{{ranking_data.id}}/participant/{{p.participant_id}}/matches" >{{p.participant_gamertag}}</a></td>
                 <td><span >{{p.participant_points}}</span></td>
                 <td><a href="/ranking/{{ranking_data.id}}/participant/{{p.participant_id}}/matches" >{{p.set_count}}</a></td>
                 <td><span style="color:white">
