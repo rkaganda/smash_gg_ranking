@@ -22,7 +22,7 @@ class Ranking(Base):
 class RankingEvent(Base):
     __tablename__ = "{}_ranking_events".format(config.settings['db_suffix'])
     id = Column(Integer, primary_key=True, autoincrement=True)
-    event_id = Column(Integer, nullable=False, unique=True)
+    event_id = Column(Integer, nullable=False)
     ranking_id = Column(Integer, ForeignKey("{}_ranking.id".format(config.settings['db_suffix'])))
     event_url = Column(String, nullable=False, unique=True)
 
@@ -30,7 +30,9 @@ class RankingEvent(Base):
 class RankingSet(Base):
     __tablename__ = "{}_ranking_sets".format(config.settings['db_suffix'])
     id = Column(Integer, primary_key=True)
-    ranking_event_id = Column(Integer, ForeignKey("{}_ranking_events.id".format(config.settings['db_suffix'])), nullable=False)
+    ranking_id = Column(Integer, ForeignKey("{}_ranking.id".format(config.settings['db_suffix'])), nullable=False)
+    ranking_event_id = Column(Integer, ForeignKey("{}_ranking_events.id".format(config.settings['db_suffix'])),
+                              nullable=False)
     set_id = Column(Integer, nullable=False)
     set_datetime = Column(DateTime, nullable=False)
     winner_id = Column(String, nullable=False)

@@ -69,6 +69,7 @@ def add_event_to_ranking(full_url, ranking_name):
 
         for event_set in ranking_event_sets:
             event_set['ranking_event_id'] = ranking_event_id
+            event_set['ranking_id'] = ranking.id
             event_set['winner_change'] = None
             event_set['loser_change'] = None
 
@@ -85,7 +86,8 @@ def calculate_ranking(ranking_name):
     with session() as session:
         ranking = session.query(Ranking).where(Ranking.name == ranking_name).scalar()
         ranking_events_subquery = select(RankingEvent.id).filter(RankingEvent.ranking_id == ranking.id)
-        ranking_sets = session.query(RankingSet).filter(RankingSet.ranking_event_id.in_(ranking_events_subquery))
+        ranking_sets = session.query(RankingSet).filter(
+            RankingSet.ranking_event_id.in_(ranking_events_subquery)).order_by(RankingSet.set_datetime.asc())
         participant_points = elo.update_ranking_set_points(ranking_sets)
 
         for pr_id in participant_points.keys():  # for each participant points
@@ -95,14 +97,14 @@ def calculate_ranking(ranking_name):
                     ParticipantRanking.ranking_id == ranking.id
                 )).first()
             if participant_ranking is None:  # if participant has no points
-                participant_ranking_data = {    # create new
+                participant_ranking_data = {  # create new
                     "participant_id": pr_id,
                     "ranking_id": ranking.id,
                     "participant_points": participant_points[pr_id],
                     "up_from_last": None
                 }
                 session.add(ParticipantRanking(**participant_ranking_data))
-            else:   # update existing participant_ranking
+            else:  # update existing participant_ranking
                 participant_ranking.participant_points = participant_points[pr_id]
                 if participant_ranking.participant_points < participant_points[pr_id]:
                     participant_ranking.up_from_last = False
@@ -112,4 +114,3 @@ def calculate_ranking(ranking_name):
                     participant_ranking.up_from_last = None
         session.commit()
         session.close()
-

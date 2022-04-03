@@ -9,17 +9,25 @@
 </head>
 <body>
     <div class="container">
-        <h1 style="color:white">Rankings</h1>
+        <h2 style="color:white">Rankings</h2>
         <p class="lead"></p>
         <table class="table table-striped table-dark">
+            <tr>
+                <th>Ranking</th>
+                <th>Game</th>
+                <th>Events</th>
+                <th>Players</th>
+                <th>Matches</th>
+                <th>System</th>
+            </tr>
             {% for r in rankings %}
             <tr >
                 <td><span style="color:white" >{{r.name}}</span></td>
                 <td><span style="color:white">{{r.videogame.display_name}}</span></td>
-                <td><a class=" " href="/ranking/events/{{r.id}}">Events: {{r.event_count}}</a></td>
-                <td><a href="/ranking/participants/{{r.id}}" class=" ">Players: {{r.participant_count}}</a></td>
-                <td><span class=" ">matches: {{r.match_count}}</span></td>
-                <td><span class=" ">type: {{r.ranking_algorithm_name}}</span></td>
+                <td><a class=" " href="/ranking/events/{{r.id}}">{{r.event_count}}</a></td>
+                <td><a href="/ranking/{{r.id}}/participants/" class=" ">{{r.participant_count}}</a></td>
+                <td><span class=" ">{{r.match_count}}</span></td>
+                <td><span class=" ">{{r.ranking_algorithm_name}}</span></td>
             </tr>
             {% endfor %}
         </table>

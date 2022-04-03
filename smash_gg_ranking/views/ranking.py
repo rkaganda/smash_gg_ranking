@@ -1,8 +1,7 @@
 import logging
-from sqlalchemy import select
 
 from db import db
-from db.models import Ranking, RankingEvent, RankingSet, RankingAlgorithm
+from db.models import Ranking, RankingEvent, RankingSet, RankingAlgorithm, ParticipantRanking
 from smash_gg import graph_query
 from config import config
 
@@ -24,15 +23,16 @@ def get_rankings():
                 RankingAlgorithm.id == r.ranking_algorithms_id).first()
             ranking_events = session.query(RankingEvent).where(RankingEvent.ranking_id == r.id).all()
             event_info = graph_query.get_event_attributes(graph_query.parse_event_url(ranking_events[0].event_url))
-            ranking_events_subquery = select(RankingEvent.id).filter(RankingEvent.ranking_id == r.id)
-            set_count = session.query(RankingSet.id).filter(
-                RankingSet.ranking_event_id.in_(ranking_events_subquery)).count()
+            participant_count = session.query(ParticipantRanking.id).where(ParticipantRanking.ranking_id==r.id).count()
+            logger.debug(participant_count)
+            set_count = session.query(RankingSet.id).where(
+                RankingSet.ranking_id == r.id).count()
             rank_views.append({
                 "name": r.name,
                 "id": r.id,
                 "videogame": event_info['videogame'],
                 "event_count": len(ranking_events),
-                "participant_count": event_info['entrants_count'],
+                "participant_count": participant_count,
                 "match_count": set_count,
                 "ranking_algorithm_name": ranking_algorithm_name[0]
             })

@@ -134,12 +134,11 @@ def parse_node_slot(node_slots: List, node_set) -> Dict:
         highest_score = -1  # track the highest score
         highest_score_index = -1
         for ns_index, node_slot in enumerate(node_slots):
-
             if len(node_slot['entrant']['participants']) > 1:  # if more than 2 entrants
                 raise InvalidSetNode(node_slot)
             standing_slots.append({
                 'score': node_slot['standing']['stats']['score']['value'],
-                'id': node_slot['entrant']['participants'][0]['user']['slug']
+                'id': node_slot['entrant']['participants'][0]['user']['slug'].replace("/", "_")
             })
             if highest_score < node_slot['standing']['stats']['score']['value']:  # if highest score
                 highest_score_index = ns_index
@@ -157,6 +156,10 @@ def parse_node_slot(node_slots: List, node_set) -> Dict:
         # no high score
         # logger.exception(e)
         # logger.debug(node_slots)
+        node_set = None
+    except AttributeError as e:
+        logger.exception(e)
+        logger.debug("node_slots={}".format(node_slots))
         node_set = None
 
     return node_set

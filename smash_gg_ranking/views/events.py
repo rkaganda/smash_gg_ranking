@@ -6,7 +6,7 @@ from db.models import Ranking, RankingEvent, RankingSet
 from smash_gg import graph_query
 from config import config
 
-logger = logging.getLogger('views/events')
+logger = logging.getLogger('views/event')
 logger.setLevel(config.settings['log_level'])
 handler = logging.FileHandler(filename=config.settings['log_path'], encoding='utf-8', mode='a')
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
@@ -23,6 +23,7 @@ def get_events(ranking_id: int):
             set_count = session.query(RankingSet.id).where(RankingSet.ranking_event_id==re.id).count()
             event = graph_query.get_event_attributes(graph_query.parse_event_url(re.event_url))
             events.append({
+                "id": re.id,
                 "url": re.event_url,
                 "tournament": event['tournament'],
                 "name": event['name'],
@@ -30,5 +31,5 @@ def get_events(ranking_id: int):
                 "start_at": event['start_at'].strftime("%m/%d/%Y")
             })
 
-    return ranking.name, events
+    return ranking.__dict__, events
 
