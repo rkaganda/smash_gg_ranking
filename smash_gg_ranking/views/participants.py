@@ -27,7 +27,6 @@ def get_ranking_participants(ranking_id: int, paging: Dict):
             "page_size": paging['page_size']
         }
         offset = (paging['page_num']-1) * paging['page_size']
-        logger.debug(paging['page_size'])
 
         participant_ranking = session.query(ParticipantRanking).where(
             ParticipantRanking.ranking_id == ranking_id).order_by(

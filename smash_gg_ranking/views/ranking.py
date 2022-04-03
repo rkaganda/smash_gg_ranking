@@ -24,7 +24,7 @@ def get_rankings():
             ranking_events = session.query(RankingEvent).where(RankingEvent.ranking_id == r.id).all()
             event_info = graph_query.get_event_attributes(graph_query.parse_event_url(ranking_events[0].event_url))
             participant_count = session.query(ParticipantRanking.id).where(ParticipantRanking.ranking_id==r.id).count()
-            logger.debug(participant_count)
+
             set_count = session.query(RankingSet.id).where(
                 RankingSet.ranking_id == r.id).count()
             rank_views.append({

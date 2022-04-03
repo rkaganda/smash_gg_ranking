@@ -2,27 +2,30 @@
 {% block title %}Ranking Events{% endblock %}
 {% block content %}
     <div class="container">
-        <h2 style="color:white">
+        <h3 style="color:white">
         <a href="/ranking/">Rankings</a>
             <span> > </span>
-        <a href="/ranking/"> {{ranking_data.name}}</a>
-            <span>> Events</span></h2>
+        <span> {{ranking_data.name}}</span>
+            <span>> Events</span></h3>
         <p class="lead"></p>
         <table class="table table-striped table-dark">
             <thead>
             <tr>
-                <th>Tournament</th>
                 <th>Event</th>
                 <th>Matches</th>
+                <th>Players</th>
                 <th>Date</th>
             </tr>
             </thead>
             <tbody>
             {% for e in events %}
             <tr>
-                <td><a href="{{e.url}}" >{{e.tournament}}</a></td>
-                <td><a href="{{e.url}}" >{{e.name}}</a></td>
+                <td><a href="{{e.url}}" >{{e.tournament}} {{e.name}}</a></td>
                 <td><a href="/ranking/{{ranking_data.id}}/event/{{e.id}}/matches">{{e.set_count}}</a></td>
+                <!--
+                <td><a href="/ranking/{{ranking_data.id}}/event/{{e.id}}/participants">-</a></td>
+                -->
+                <td><span>-</span></td>
                 <td><span >{{e.start_at}}</span></td>
             </tr>
 
