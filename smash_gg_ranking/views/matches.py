@@ -69,3 +69,37 @@ def get_participant_sets(ranking_id: int, participant_id: str):
             })
 
     return ranking.__dict__, participant_data, sets
+
+
+def get_event_participant_sets(ranking_id: int, event_id: int, participant_id: str):
+    logging.debug("participant_id={}".format(participant_id))
+    participant_data = {
+        "id": participant_id
+    }
+    sets = []
+    session = db.get_session()
+    with session() as session:
+        ranking = session.query(Ranking).where(Ranking.id == ranking_id).first()
+        event = session.query(RankingEvent).where(RankingEvent.id == event_id).first()
+        event = event.__dict__
+        event['attrib'] = graph_query.get_event_attributes(graph_query.parse_event_url(event['event_url']))
+
+        participant_sets = session.query(RankingSet).where(
+            and_(or_(RankingSet.loser_id == participant_id, RankingSet.winner_id == participant_id),
+                 RankingSet.ranking_event_id == event_id
+                 )
+        ).order_by(RankingSet.set_datetime.desc())
+        for ps in participant_sets:
+            sets.append({
+                "winner_id": ps.winner_id,
+                "winner_score": ps.winner_score,
+                "winner_points": ps.winner_points,
+                "winner_change": ps.winner_change,
+                "loser_id": ps.loser_id,
+                "loser_score": ps.loser_score,
+                "loser_points": ps.loser_points,
+                "loser_change": ps.loser_change,
+                "set_datetime": ps.set_datetime,
+            })
+
+    return ranking.__dict__, event, participant_data, sets

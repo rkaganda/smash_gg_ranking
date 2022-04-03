@@ -38,15 +38,21 @@ def view_ranking_participants(ranking_id=None):
 
 
 @app.route('/ranking/<ranking_id>/event/<event_id>/matches')
-def view_matches_ranking_event(ranking_id=None, event_id=None):
+def view_ranking_event_matches(ranking_id=None, event_id=None):
     ranking_data, event_data, event_sets = matches.get_ranking_sets(ranking_id, event_id)
     return render_template('ranking/event/matches.html', event_sets=event_sets, ranking_data=ranking_data,
                            event_data=event_data)
 
 
 @app.route('/ranking/<ranking_id>/participant/<participant_id>/matches')
-def view_matches_ranking_participant(ranking_id=None, participant_id=None):
+def view_ranking_participant_matches(ranking_id=None, participant_id=None):
     ranking_data, participant_data, participant_sets = matches.get_participant_sets(ranking_id, participant_id)
-    logging.debug("participant_data={}".format(participant_data))
     return render_template('ranking/participant/matches.html', participant_sets=participant_sets,
                            participant_data=participant_data, ranking_data=ranking_data)
+
+
+@app.route('/ranking/<ranking_id>/event/<event_id>/participant/<participant_id>/matches')
+def view_ranking_event_participant_matches(ranking_id=None, participant_id=None, event_id=None):
+    ranking_data, event_data, participant_data, participant_sets = matches.get_event_participant_sets(ranking_id, event_id, participant_id)
+    return render_template('ranking/event/participant/matches.html', participant_sets=participant_sets,
+                           participant_data=participant_data, ranking_data=ranking_data, event_data=event_data)
