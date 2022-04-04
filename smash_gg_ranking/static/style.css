@@ -15,3 +15,10 @@
     border: 1px solid #373b3e;
     transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
 }
+
+.page-item.disabled .page-link {
+    color: #6c757d;
+    pointer-events: none;
+    background-color: #343a40;
+    border-color: #dee2e6;
+}
