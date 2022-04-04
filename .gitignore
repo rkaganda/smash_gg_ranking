@@ -5,3 +5,4 @@
 .idea/
 /TODO
 /data_input.py
+*.pyc

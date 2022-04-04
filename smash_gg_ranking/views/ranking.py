@@ -1,7 +1,7 @@
 import logging
 
 from db import db
-from db.models import Ranking, RankingEvent, RankingSet, RankingAlgorithm, ParticipantRanking
+from db.models import Ranking, RankingEvent, RankingSet, RankingAlgorithm, ParticipantRanking, Videogame
 from smash_gg import graph_query
 from config import config
 
@@ -25,7 +25,13 @@ def get_rankings():
             ranking_events = session.query(RankingEvent).where(RankingEvent.ranking_id == r.id).all()
             if len(ranking_events) == 0:
                 break
-            event_info = graph_query.get_event_attributes(graph_query.parse_event_url(ranking_events[0].event_url))
+            # event_info = graph_query.get_event_attributes(graph_query.parse_event_url(ranking_events[0].event_url))
+            # TODO fix later
+            videogame_name = session.query(Videogame.name).where(Videogame.smash_gg_id == r.videogame_id).scalar()
+            logger.debug(videogame_name)
+            if videogame_name is None:
+                videogame_name = 'Guilty Gear: Strive'
+
             participant_count = session.query(ParticipantRanking.id).where(ParticipantRanking.ranking_id==r.id).count()
 
             set_count = session.query(RankingSet.id).where(
@@ -33,7 +39,7 @@ def get_rankings():
             rank_views.append({
                 "name": r.name,
                 "id": r.id,
-                "videogame": event_info['videogame'],
+                "videogame": videogame_name,
                 "event_count": len(ranking_events),
                 "participant_count": participant_count,
                 "match_count": set_count,

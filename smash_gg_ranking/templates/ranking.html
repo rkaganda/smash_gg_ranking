@@ -19,7 +19,7 @@
             {% for r in rankings %}
             <tr >
                 <td><span style="color:white" >{{r.name}}</span></td>
-                <td><span style="color:white">{{r.videogame.display_name}}</span></td>
+                <td><span style="color:white">{{r.videogame}}</span></td>
                 <td><a class=" " href="/ranking/{{r.id}}/events/">{{r.event_count}}</a></td>
                 <td><a href="/ranking/{{r.id}}/participants/" class=" ">{{r.participant_count}}</a></td>
                 <td><span class=" ">{{r.match_count}}</span></td>

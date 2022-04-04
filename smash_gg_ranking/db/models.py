@@ -12,6 +12,13 @@ class RankingAlgorithm(Base):
     __table_args__ = {'extend_existing': True}
 
 
+class Videogame(Base):
+    __tablename__ = "{}_videogame".format(config.settings['db_suffix'])
+    id = Column(Integer, primary_key=True)
+    smash_gg_id = Column(Integer)
+    name = Column(String, unique=True)
+    __table_args__ = {'extend_existing': True}
+
 class Ranking(Base):
     __tablename__ = "{}_ranking".format(config.settings['db_suffix'])
     __table_args__ = {'extend_existing': True}

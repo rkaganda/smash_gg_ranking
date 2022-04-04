@@ -26,7 +26,6 @@ def get_ranking_sets(ranking_id: int, event_id: int, page_params: Dict):
             RankingSet.ranking_event_id == event_id).order_by(RankingSet.set_datetime.desc())
         event = session.query(RankingEvent).where(RankingEvent.id == event_id).first()
         event = event.__dict__
-        event['attrib'] = graph_query.get_event_attributes(graph_query.parse_event_url(event['event_url']))
 
         ranking_sets, paging_info = paging.get_paging_info(ranking_sets, page_params)
 
