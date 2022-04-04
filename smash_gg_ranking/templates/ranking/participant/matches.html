@@ -60,7 +60,7 @@
                     {% else %}
                         <td>
                             <a href="{{ url_for(request.endpoint, participant_id=set.winner_id, event=event_data.id, ranking_id=ranking_data.id) }}" >
-                                {{set.loser_gamertag}}
+                                {{set.winner_gamertag}}
                             </a>
                         </td>
                     {% endif %}
