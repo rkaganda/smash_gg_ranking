@@ -46,40 +46,42 @@
             {% endfor %}
             </tbody>
         </table>
-        <nav aria-label="Page nav" class="fixed-bottom" >
-            <ul class="pagination justify-content-center">
-                {% if paging_info.page_num == 1 %}
-                    <li class="page-item disabled bg-dark">
-                        <a class="page-link" href="#" aria-disabled="true"><<</a>
+        {% if paging_info.max_page > 1 %}
+            <nav aria-label="Page nav" class="fixed-bottom" >
+                <ul class="pagination justify-content-center">
+                    {% if paging_info.page_num == 1 %}
+                        <li class="page-item disabled bg-dark">
+                            <a class="page-link" href="#" aria-disabled="true"><<</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for(request.endpoint, ranking_id=ranking_data.id, page_num=1, page_size=paging_info.page_size) }}" ><<</a>
+                        </li>
+                    {% endif %}
+                    {% for p_num in range( [1, paging_info.page_num-2]|max, paging_info.page_num ) %}
+                        <li class="page-item" aria-current="page">
+                            <a class="page-link" href="{{ url_for(request.endpoint, ranking_id=ranking_data.id, page_num=p_num, page_size=paging_info.page_size) }}">{{p_num}}</a>
+                        </li>
+                    {% endfor %}
+                    <li class="page-item active" aria-current="page">
+                        <a class="page-link" href="#">{{paging_info.page_num}}</a>
                     </li>
-                {% else %}
-                    <li class="page-item">
-                        <a class="page-link" href="{{ url_for(request.endpoint, ranking_id=ranking_data.id, page_num=1, page_size=paging_info.page_size) }}" ><<</a>
-                    </li>
-                {% endif %}
-                {% for p_num in range( [1, paging_info.page_num-2]|max, paging_info.page_num ) %}
-                    <li class="page-item" aria-current="page">
+                    {% for p_num in range( paging_info.page_num+1, [paging_info.page_num+3, paging_info.max_page+1]|min ) %}
+                        <li class="page-item" aria-current="page">
                         <a class="page-link" href="{{ url_for(request.endpoint, ranking_id=ranking_data.id, page_num=p_num, page_size=paging_info.page_size) }}">{{p_num}}</a>
                     </li>
-                {% endfor %}
-                <li class="page-item active" aria-current="page">
-                    <a class="page-link" href="#">{{paging_info.page_num}}</a>
-                </li>
-                {% for p_num in range( paging_info.page_num+1, [paging_info.page_num+3, paging_info.max_page+1]|min ) %}
-                    <li class="page-item" aria-current="page">
-                    <a class="page-link" href="{{ url_for(request.endpoint, ranking_id=ranking_data.id, page_num=p_num, page_size=paging_info.page_size) }}">{{p_num}}</a>
-                </li>
-                {% endfor %}
-                {% if paging_info.page_num == paging_info.max_page %}
-                    <li class="page-item disabled bg-dark">
-                        <a class="page-link" href="#" aria-disabled="true">>></a>
-                    </li>
-                {% else %}
-                    <li class="page-item">
-                        <a class="page-link" href="{{ url_for(request.endpoint, ranking_id=ranking_data.id, page_num=paging_info.max_page, page_size=paging_info.page_size) }}" >>></a>
-                    </li>
-                {% endif %}
-            </ul>
-        </nav>
+                    {% endfor %}
+                    {% if paging_info.page_num == paging_info.max_page %}
+                        <li class="page-item disabled bg-dark">
+                            <a class="page-link" href="#" aria-disabled="true">>></a>
+                        </li>
+                    {% else %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for(request.endpoint, ranking_id=ranking_data.id, page_num=paging_info.max_page, page_size=paging_info.page_size) }}" >>></a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
     </div>
 {% endblock %}

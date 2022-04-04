@@ -6,6 +6,7 @@ from db import db
 from db.models import Ranking, RankingEvent, ParticipantRanking, RankingSet, Participant
 from smash_gg import graph_query
 from config import config
+from views import paging
 
 logger = logging.getLogger('views/players')
 logger.setLevel(config.settings['log_level'])
@@ -14,24 +15,19 @@ handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(me
 logger.addHandler(handler)
 
 
-def get_ranking_participants(ranking_id: int, paging: Dict):
+def get_ranking_participants(ranking_id: int, page_params: Dict):
     participants = []
     session = db.get_session()
     with session() as session:
         ranking = session.query(Ranking).where(Ranking.id == ranking_id).first()
-        participant_ranking_count = session.query(ParticipantRanking).where(
-            ParticipantRanking.ranking_id == ranking_id).count()
-        paging_info = {
-            "page_num": paging['page_num'],
-            "max_page": (participant_ranking_count // paging['page_size']) + 1,  # math is hard?
-            "page_size": paging['page_size']
-        }
-        offset = (paging['page_num']-1) * paging['page_size']
 
         participant_ranking = session.query(ParticipantRanking).where(
             ParticipantRanking.ranking_id == ranking_id).order_by(
-            ParticipantRanking.participant_points.desc()).offset(offset).limit(paging['page_size'])
-        rank = 1 + offset
+            ParticipantRanking.participant_points.desc())
+
+        participant_ranking, paging_info = paging.get_paging_info(participant_ranking, page_params)
+
+        rank = 1 + paging_info['offset']
 
         # TODO refactor to mapping
         participants_data = session.query(Participant).all()

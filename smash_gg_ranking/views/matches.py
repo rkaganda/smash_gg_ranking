@@ -5,6 +5,7 @@ from typing import Dict
 from db import db
 from db.models import Ranking, RankingSet, RankingEvent, Participant
 from smash_gg import graph_query
+from views import paging
 from config import config
 
 logger = logging.getLogger('views/matches')
@@ -14,21 +15,7 @@ handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(me
 logger.addHandler(handler)
 
 
-def get_paging_info(sets, paging: Dict):
-    # paging
-    participant_sets_count = sets.count()
-    paging_info = {
-        "page_num": paging['page_num'],
-        "max_page": (participant_sets_count // paging['page_size']) + 1,  # math is hard?
-        "page_size": paging['page_size']
-    }
-    offset = (paging['page_num'] - 1) * paging['page_size']
-    participant_sets = sets.offset(offset).limit(paging['page_size'])
-
-    return participant_sets, paging_info
-
-
-def get_ranking_sets(ranking_id: int, event_id: int, paging: Dict):
+def get_ranking_sets(ranking_id: int, event_id: int, page_params: Dict):
     sets = []
     session = db.get_session()
     with session() as session:
@@ -40,7 +27,7 @@ def get_ranking_sets(ranking_id: int, event_id: int, paging: Dict):
         event = event.__dict__
         event['attrib'] = graph_query.get_event_attributes(graph_query.parse_event_url(event['event_url']))
 
-        ranking_sets, paging_info = get_paging_info(ranking_sets, paging)
+        ranking_sets, paging_info = paging.get_paging_info(ranking_sets, page_params)
 
         # TODO refactor to mapping
         participants = session.query(Participant).all()
@@ -66,7 +53,7 @@ def get_ranking_sets(ranking_id: int, event_id: int, paging: Dict):
     return ranking.__dict__, event, sets, paging_info
 
 
-def get_participant_sets(ranking_id: int, event_id: int, participant_id: str, paging: Dict):
+def get_participant_sets(ranking_id: int, event_id: int, participant_id: str, page_params: Dict):
     logging.debug("participant_id={}".format(participant_id))
     sets = []
     session = db.get_session()
@@ -82,14 +69,13 @@ def get_participant_sets(ranking_id: int, event_id: int, participant_id: str, pa
             event = session.query(RankingEvent).where(RankingEvent.id == event_id).first()
             if event is not None:
                 event_data = event.__dict__
-                # event_data['attrib'] = graph_query.get_event_attributes(graph_query.parse_event_url(event_data['event_url']))
                 participant_sets = participant_sets.where(
                     RankingSet.ranking_event_id == event_id
                 )
         else:
             pass
 
-        participant_sets, paging_info = get_paging_info(participant_sets, paging)
+        participant_sets, paging_info = paging.get_paging_info(participant_sets, page_params)
 
         # TODO refactor to mapping
         participants = session.query(Participant).all()
