@@ -3,14 +3,23 @@
 {% block content %}
     <div class="container">
         <h3 style="color:white">
-        <a href="/ranking/">Rankings</a>
+            <a href="/ranking/">Rankings</a>
             <span> > </span>
-        <span> {{ranking_data.name}}</span></h3>
+            <a href="/ranking/{{ ranking_data.id }}/participants/"> {{ranking_data.name}}</a>
+                <span> > </span>
+            {% if event_data is not none %}
+                <a href="/ranking/{{ranking_data.id}}/event/{{event_data.id}}/matches">{{event_data.event_name}}</a>
+                <span> > </span>
+            {% endif %}
+            <span>Players</span>
+        </h3>
         <p class="lead"></p>
         <table class="table table-striped table-dark">
             <thead>
             <tr>
-                <th>Rank</th>
+                {% if event_data is none %}
+                    <th>Rank</th>
+                {% endif %}
                 <th>Player</th>
                 <th>Points</th>
                 <th>Sets</th>
@@ -22,10 +31,22 @@
             <tbody>
             {% for p in participants %}
             <tr>
-                <td><span>#{{p.rank}}</span></td>
-                <td><a href="/ranking/{{ranking_data.id}}/participant/{{p.participant_id}}/matches" >{{p.participant_gamertag}}</a></td>
+                {% if event_data is none %}
+                    <td><span>#{{p.rank}}</span></td>
+                    <td><a href="/ranking/{{ranking_data.id}}/participant/{{p.participant_id}}/matches" >{{p.participant_gamertag}}</a></td>
+                {% else %}
+                    <td><a href="{{
+                        url_for('view_ranking_participant_matches', ranking_id=ranking_data.id, participant_id=p.participant_id, event=event_data.id)
+                    }}">{{p.participant_gamertag}}</a></td>
+                {% endif %}
                 <td><span >{{p.participant_points}}</span></td>
-                <td><a href="/ranking/{{ranking_data.id}}/participant/{{p.participant_id}}/matches" >{{p.set_count}}</a></td>
+                {% if event_data is none %}
+                    <td><a href="/ranking/{{ranking_data.id}}/participant/{{p.participant_id}}/matches" >{{p.set_count}}</a></td>
+                {% else %}
+                    <td><a href="{{
+                        url_for('view_ranking_participant_matches', ranking_id=ranking_data.id, participant_id=p.participant_id, event=event_data.id)
+                    }}">{{p.set_count}}</a></td>
+                {% endif %}
                 <td><span>{{p.set_win_count}}-{{p.set_loss_count}}</span></td>
                 <td>
                     {% if ((p.participant_points-1500) / p.set_count) > 0 %}

@@ -47,9 +47,9 @@ def view_events(ranking_id=None):
 @app.route('/ranking/<ranking_id>/event/<event_id>/participants/')
 def view_ranking_participants(ranking_id=None, event_id=None):
     page_params = generate_paging()
-    ranking_data, participants_set, paging_info = participants.get_ranking_participants(ranking_id, event_id, page_params)
+    ranking_data, participants_set, event_data, paging_info = participants.get_ranking_participants(ranking_id, event_id, page_params)
     return render_template('ranking/participants.html', participants=participants_set, ranking_data=ranking_data,
-                           paging_info=paging_info)
+                           event_data=event_data, paging_info=paging_info)
 
 
 @app.route('/ranking/<ranking_id>/event/<event_id>/matches')

@@ -26,7 +26,6 @@ def get_events(ranking_id: int, page_params: Dict):
 
         for re in ranking_events:
             set_count = session.query(RankingSet.id).where(RankingSet.ranking_event_id == re.id).count()
-            logger.debug(session.query(func.count(distinct(tuple_(RankingSet.winner_id, RankingSet.loser_id)))))
             winners = select(RankingSet.winner_id.label("participant_id")).where(RankingSet.ranking_event_id == re.id)
             losers = select(RankingSet.loser_id.label("participant_id")).where(RankingSet.ranking_event_id == re.id)
             q = winners.union(losers).subquery()
