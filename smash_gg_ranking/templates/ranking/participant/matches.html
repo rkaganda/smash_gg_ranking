@@ -20,12 +20,17 @@
                 <th>Score</th>
                 <th>Player</th><th>Points</th><th>Change</th>
                 <th>Opponent</th><th>Points</th><th>Change</th>
+                {% if event_data is none %}
+                    <th>Event</th>
+                {% else %}
+                    <th> Time </th>
+                {% endif %}
             </tr>
             </thead>
             <tbody>
             {% for set in participant_sets %}
-                {% if set.winner_id == participant_data.id %}
-                    <tr>
+                <tr>
+                    {% if set.winner_id == participant_data.id %}
                         <td><span style="color:green">{{set.winner_score}} - {{set.loser_score}}</span></td>
                         <!--
                         <td><a href="https://www.smash.gg/{{ set.winner_id | replace('_','/') }}" target="_blank">{{set.winner_gamertag}}</a></td>
@@ -45,9 +50,7 @@
                         {% endif %}
                         <td><span style="color:white">{{set.loser_points}}</span></td>
                         <td><span style="color:red">{{set.loser_change}}</span></td>
-                    </tr>
-                {% else %}
-                    <tr>
+                    {% else %}
                         <td><span style="color:red">{{set.loser_score}} - {{set.winner_score}}</span></td>
                         <td><span>{{set.loser_gamertag}}</span></td>
                         <td><span style="color:white">{{set.loser_points}}</span></td>
@@ -55,8 +58,17 @@
                         <td><a href="/ranking/{{ranking_data.id}}/participant/{{set.winner_id}}/matches">{{set.winner_gamertag}}</a></td>
                         <td><span style="color:white">{{set.winner_points}}</span></td>
                         <td><span style="color:green">{{set.winner_change}}</span></td>
-                    </tr>
-                {% endif %}
+                    {% endif %}
+                    {% if event_data is none %}
+                        <td><a href="{{
+                            url_for(
+                            request.endpoint, ranking_id=ranking_data.id, page_num=1,
+                            page_size=paging_info.page_size, participant_id=participant_data.id, event=set.event_id)
+                        }}">{{set.event_name}}</a></td>
+                    {% else %}
+                        <td><span>{{set.set_datetime}}</span></td>
+                    {% endif %}
+                </tr>
             {% endfor %}
             </tbody>
         </table>

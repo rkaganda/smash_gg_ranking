@@ -20,7 +20,7 @@
             <tbody>
             {% for e in events %}
             <tr>
-                <td><a href="{{e.url}}" >{{e.name}}</a></td>
+                <td><a href="{{e.url}}" target="_blank">{{e.name}}</a></td>
                 <td><a href="/ranking/{{ranking_data.id}}/event/{{e.id}}/matches">{{e.set_count}}</a></td>
                 <!--
                 <td><a href="/ranking/{{ranking_data.id}}/event/{{e.id}}/participants">-</a></td>

@@ -18,6 +18,7 @@
                 <th>Score</th>
                 <th>Winner</th><th>Points</th><th>Gain</th>
                 <th>Loser</th><th>Points</th><th>Loss</th>
+                <th> Time </th>
             </tr>
             </thead>
             <tbody>
@@ -30,6 +31,7 @@
                     <td><a href="/ranking/{{ranking_data.id}}/participant/{{set.loser_id}}/matches/?event={{event_data.id}}">{{set.loser_gamertag}}</a></td>
                     <td><span style="color:white">{{set.loser_points}}</span></td>
                     <td><span style="color:red">{{set.loser_change}}</span></td>
+                    <td><span>{{set.set_datetime}}</span></td>
                 </tr>
                 {% endfor %}
             </tbody>

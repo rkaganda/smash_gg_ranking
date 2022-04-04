@@ -1,5 +1,6 @@
 import logging
 from sqlalchemy import and_, or_
+from sqlalchemy.inspection import inspect
 from typing import Dict
 
 from db import db
@@ -47,7 +48,7 @@ def get_ranking_sets(ranking_id: int, event_id: int, page_params: Dict):
                 "loser_score": round(rs.loser_score, 2),
                 "loser_points": round(rs.loser_points, 2),
                 "loser_change": round(rs.loser_change, 2),
-                "set_datetime": rs.set_datetime,
+                "set_datetime": rs.set_datetime.strftime("%Y-%m-%d %I:%M %p %z"),
             })
 
     return ranking.__dict__, event, sets, paging_info
@@ -60,9 +61,9 @@ def get_participant_sets(ranking_id: int, event_id: int, participant_id: str, pa
     with session() as session:
         ranking = session.query(Ranking).where(Ranking.id == ranking_id).first()
 
-        participant_sets = session.query(RankingSet).where(
+        participant_sets = session.query(RankingSet, RankingEvent.event_name).where(
             or_(RankingSet.loser_id == participant_id, RankingSet.winner_id == participant_id)
-        ).order_by(RankingSet.set_datetime.desc())
+        ).filter(RankingSet.ranking_event_id == RankingEvent.id).order_by(RankingSet.set_datetime.desc())
 
         event_data = None
         if event_id is not None:
@@ -89,18 +90,21 @@ def get_participant_sets(ranking_id: int, event_id: int, participant_id: str, pa
         }
 
         for ps in participant_sets:
+            logger.debug(ps.keys())
             sets.append({
-                "winner_id": ps.winner_id,
-                "winner_gamertag": par_tags[ps.winner_id],
-                "winner_score": round(ps.winner_score, 2),
-                "winner_points": round(ps.winner_points, 2),
-                "winner_change": round(ps.winner_change, 2),
-                "loser_gamertag": par_tags[ps.loser_id],
-                "loser_id": ps.loser_id,
-                "loser_score": round(ps.loser_score, 2),
-                "loser_points": round(ps.loser_points, 2),
-                "loser_change": round(ps.loser_change, 2),
-                "set_datetime": ps.set_datetime,
+                "winner_id": ps.RankingSet.winner_id,
+                "winner_gamertag": par_tags[ps.RankingSet.winner_id],
+                "winner_score": round(ps.RankingSet.winner_score, 2),
+                "winner_points": round(ps.RankingSet.winner_points, 2),
+                "winner_change": round(ps.RankingSet.winner_change, 2),
+                "loser_gamertag": par_tags[ps.RankingSet.loser_id],
+                "loser_id": ps.RankingSet.loser_id,
+                "loser_score": round(ps.RankingSet.loser_score, 2),
+                "loser_points": round(ps.RankingSet.loser_points, 2),
+                "loser_change": round(ps.RankingSet.loser_change, 2),
+                "set_datetime": ps.RankingSet.set_datetime.strftime("%Y-%m-%d %I:%M %p"),
+                "event_name": ps.event_name,
+                "event_id": ps.RankingSet.ranking_event_id
             })
 
     return ranking.__dict__, event_data, participant_data, sets, paging_info
