@@ -45,7 +45,7 @@ def get_ranking_participants(ranking_id: int, page_params: Dict):
                 "rank": rank,
                 "participant_id": pr.participant_id,
                 "participant_gamertag": par_tags[pr.participant_id],
-                "participant_points": pr.participant_points,
+                "participant_points": round(pr.participant_points, 2),
                 "set_count": set_count,
                 "up_from_last": pr.up_from_last
             })

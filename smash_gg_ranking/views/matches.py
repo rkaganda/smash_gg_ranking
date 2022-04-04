@@ -39,14 +39,14 @@ def get_ranking_sets(ranking_id: int, event_id: int, page_params: Dict):
             sets.append({
                 "winner_id": rs.winner_id,
                 "winner_gamertag": par_tags[rs.winner_id],
-                "winner_score": rs.winner_score,
-                "winner_points": rs.winner_points,
-                "winner_change": rs.winner_change,
+                "winner_score": round(rs.winner_score, 2),
+                "winner_points": round(rs.winner_points, 2),
+                "winner_change": round(rs.winner_change, 2),
                 "loser_id": rs.loser_id,
                 "loser_gamertag": par_tags[rs.loser_id],
-                "loser_score": rs.loser_score,
-                "loser_points": rs.loser_points,
-                "loser_change": rs.loser_change,
+                "loser_score": round(rs.loser_score, 2),
+                "loser_points": round(rs.loser_points, 2),
+                "loser_change": round(rs.loser_change, 2),
                 "set_datetime": rs.set_datetime,
             })
 
@@ -92,14 +92,14 @@ def get_participant_sets(ranking_id: int, event_id: int, participant_id: str, pa
             sets.append({
                 "winner_id": ps.winner_id,
                 "winner_gamertag": par_tags[ps.winner_id],
-                "winner_score": ps.winner_score,
-                "winner_points": ps.winner_points,
-                "winner_change": ps.winner_change,
+                "winner_score": round(ps.winner_score, 2),
+                "winner_points": round(ps.winner_points, 2),
+                "winner_change": round(ps.winner_change, 2),
                 "loser_gamertag": par_tags[ps.loser_id],
                 "loser_id": ps.loser_id,
-                "loser_score": ps.loser_score,
-                "loser_points": ps.loser_points,
-                "loser_change": ps.loser_change,
+                "loser_score": round(ps.loser_score, 2),
+                "loser_points": round(ps.loser_points, 2),
+                "loser_change": round(ps.loser_change, 2),
                 "set_datetime": ps.set_datetime,
             })
 

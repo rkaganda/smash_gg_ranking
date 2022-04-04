@@ -19,7 +19,7 @@ def get_events(ranking_id: int, page_params: Dict):
     with session() as session:
         ranking = session.query(Ranking).where(Ranking.id == ranking_id).first()
         ranking_events = session.query(RankingEvent).where(RankingEvent.ranking_id == ranking_id).order_by(
-            RankingEvent.event_datetime.desc()).all()
+            RankingEvent.event_datetime.desc())
 
         ranking_events, paging_info = paging.get_paging_info(ranking_events, page_params)
 
@@ -34,4 +34,4 @@ def get_events(ranking_id: int, page_params: Dict):
                 "start_at": re.event_datetime.strftime("%Y-%m-%d")
             })
 
-    return ranking.__dict__, events
+    return ranking.__dict__, events, paging_info
