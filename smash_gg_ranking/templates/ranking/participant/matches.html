@@ -55,7 +55,15 @@
                         <td><span>{{set.loser_gamertag}}</span></td>
                         <td><span style="color:white">{{set.loser_points}}</span></td>
                         <td><span style="color:red">{{set.loser_change}}</span></td>
+                    {% if event_data is none %}
                         <td><a href="/ranking/{{ranking_data.id}}/participant/{{set.winner_id}}/matches">{{set.winner_gamertag}}</a></td>
+                    {% else %}
+                        <td>
+                            <a href="{{ url_for(request.endpoint, participant_id=set.winner_id, event=event_data.id, ranking_id=ranking_data.id) }}" >
+                                {{set.loser_gamertag}}
+                            </a>
+                        </td>
+                    {% endif %}
                         <td><span style="color:white">{{set.winner_points}}</span></td>
                         <td><span style="color:green">{{set.winner_change}}</span></td>
                     {% endif %}
