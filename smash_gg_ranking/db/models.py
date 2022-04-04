@@ -9,10 +9,12 @@ class RankingAlgorithm(Base):
     __tablename__ = "{}_ranking_algorithms".format(config.settings['db_suffix'])
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String, unique=True)
+    __table_args__ = {'extend_existing': True}
 
 
 class Ranking(Base):
     __tablename__ = "{}_ranking".format(config.settings['db_suffix'])
+    __table_args__ = {'extend_existing': True}
     id = Column(Integer, primary_key=True, autoincrement=True)
     ranking_algorithms_id = Column(Integer, ForeignKey("{}_ranking_algorithms.id".format(config.settings['db_suffix'])))
     videogame_id = Column(Integer, nullable=False)
@@ -25,7 +27,9 @@ class RankingEvent(Base):
     event_id = Column(Integer, nullable=False)
     ranking_id = Column(Integer, ForeignKey("{}_ranking.id".format(config.settings['db_suffix'])))
     event_url = Column(String, nullable=False)
-    __table_args__ = (Index('ranking_event_index', "event_id", "ranking_id", unique=True),)
+    event_name = Column(String, nullable=False)
+    event_datetime = Column(DateTime, nullable=False)
+    __table_args__ = (Index('ranking_event_index', "event_id", "ranking_id", unique=True), {'extend_existing': True})
 
 
 class RankingSet(Base):
@@ -44,7 +48,7 @@ class RankingSet(Base):
     loser_score = Column(Integer, nullable=False)
     loser_points = Column(Float)
     loser_change = Column(Float)
-    __table_args__ = (Index('ranking_set_index', "ranking_event_id", "set_id"),)
+    __table_args__ = (Index('ranking_set_index', "ranking_event_id", "set_id"), {'extend_existing': True})
 
 
 class ParticipantRanking(Base):
@@ -54,6 +58,7 @@ class ParticipantRanking(Base):
     ranking_id = Column(Integer, ForeignKey("{}_ranking.id".format(config.settings['db_suffix'])))
     participant_points = Column(Float, nullable=False)
     up_from_last = Column(Boolean)
+    __table_args__ = ({'extend_existing': True})
 
 
 class Participant(Base):
@@ -61,6 +66,7 @@ class Participant(Base):
     id = Column(String, primary_key=True)
     smash_gg_url = Column(String)
     gamer_tag = Column(String)
+    __table_args__ = ({'extend_existing': True})
 
 
 Base.metadata.create_all(engine)

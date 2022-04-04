@@ -14,19 +14,19 @@
                 <th>Event</th>
                 <th>Matches</th>
                 <th>Players</th>
-                <!--<th>Date</th>-->
+                <th>Date</th>
             </tr>
             </thead>
             <tbody>
             {% for e in events %}
             <tr>
-                <td><a href="{{e.url}}" >{{e.tournament}} {{e.name}}</a></td>
+                <td><a href="{{e.url}}" >{{e.name}}</a></td>
                 <td><a href="/ranking/{{ranking_data.id}}/event/{{e.id}}/matches">{{e.set_count}}</a></td>
                 <!--
                 <td><a href="/ranking/{{ranking_data.id}}/event/{{e.id}}/participants">-</a></td>
                 -->
                 <td><span>-</span></td>
-                <!--<td><span >{{e.start_at}}</span></td>-->
+                <td><span >{{e.start_at}}</span></td>
             </tr>
 
             {% endfor %}

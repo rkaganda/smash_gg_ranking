@@ -115,7 +115,7 @@ def get_event_attributes(url_slugs, per_page=20) -> Dict[str, int]:
     event = json.loads(smash_gg_query(query, variables))['data']['event']
     return {
         "event_id": event['id'],
-        "tournament": event['tournament']['name'],
+        "tournament_name": event['tournament']['name'],
         "name": event['name'],
         "start_at": datetime.datetime.fromtimestamp(event['startAt']),
         "page_count": event['sets']['pageInfo']['totalPages'],
@@ -259,7 +259,7 @@ def get_users_from_event(url_slugs: Dict, per_page=40) -> List:
     }
     """
     user_sets = []
-    if config.settings['show_progress'] == 'True':
+    if config.settings['show_progress'] == 'True' and page_count > 1:
         print("get_users_from_event")
         pages_enum = tqdm(range(1, page_count+1))
     else:
@@ -311,7 +311,7 @@ def get_set_pages_from_event(url_slugs: Dict, page_count: int, per_page=20) -> L
         }
         """
     event_sets = []
-    if config.settings['show_progress'] == 'True':
+    if config.settings['show_progress'] == 'True' and page_count > 1:
         print("get_set_pages_from_event")
         pages_enum = tqdm(range(1, page_count+1))
     else:
@@ -396,7 +396,7 @@ def get_events_from_user_slug(user_slug: str, per_page=20) -> List:
         }
         """
     user_events = []
-    if config.settings['show_progress'] == 'True':
+    if config.settings['show_progress'] == 'True' and page_count > 1:
         print("get_events_from_user_slug")
         pages_enum = tqdm(range(1, page_count+1))
     else:

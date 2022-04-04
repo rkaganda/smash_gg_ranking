@@ -82,7 +82,7 @@ def get_participant_sets(ranking_id: int, event_id: int, participant_id: str, pa
             event = session.query(RankingEvent).where(RankingEvent.id == event_id).first()
             if event is not None:
                 event_data = event.__dict__
-                event_data['attrib'] = graph_query.get_event_attributes(graph_query.parse_event_url(event_data['event_url']))
+                # event_data['attrib'] = graph_query.get_event_attributes(graph_query.parse_event_url(event_data['event_url']))
                 participant_sets = participant_sets.where(
                     RankingSet.ranking_event_id == event_id
                 )

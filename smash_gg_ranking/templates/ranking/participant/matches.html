@@ -8,7 +8,7 @@
             <a href="/ranking/{{ ranking_data.id }}/participants/"> {{ranking_data.name}}</a>
                 <span> > </span>
             {% if event_data is not none %}
-                <a href="/ranking/{{ranking_data.id}}/event/{{event_data.id}}/matches">{{event_data.attrib.tournament}} {{event_data.attrib.name}} </a>
+                <a href="/ranking/{{ranking_data.id}}/event/{{event_data.id}}/matches">{{event_data.event_name}}</a>
                 <span> > </span>
             {% endif %}
             <span> {{participant_data.gamertag}}</span>

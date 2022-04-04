@@ -94,6 +94,8 @@ def add_event_to_ranking(full_url, ranking_name):
             ranking_event = RankingEvent(
                 event_id=event['event_id'],
                 event_url=graph_query.reform_event_url(event_slugs),
+                event_name="{} {}".format(event['tournament_name'], event['name']),
+                event_datetime=event['start_at'],
                 ranking_id=ranking.id
             )
             session.add(ranking_event)

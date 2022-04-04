@@ -18,10 +18,13 @@ def get_rankings():
 
     with session() as session:
         rankings = session.query(Ranking).all()
+
         for r in rankings:
             ranking_algorithm_name = session.query(RankingAlgorithm.name).where(
                 RankingAlgorithm.id == r.ranking_algorithms_id).first()
             ranking_events = session.query(RankingEvent).where(RankingEvent.ranking_id == r.id).all()
+            if len(ranking_events) == 0:
+                break
             event_info = graph_query.get_event_attributes(graph_query.parse_event_url(ranking_events[0].event_url))
             participant_count = session.query(ParticipantRanking.id).where(ParticipantRanking.ranking_id==r.id).count()
 
