@@ -13,8 +13,10 @@
                 <th>Rank</th>
                 <th>Player</th>
                 <th>Points</th>
-                <th>Matches</th>
-                <th>Change</th>
+                <th>Sets</th>
+                <th>Set Score</th>
+                <th>Points Per Set</th>
+                <th>Game Score</th>
             </tr>
             </thead>
             <tbody>
@@ -24,23 +26,15 @@
                 <td><a href="/ranking/{{ranking_data.id}}/participant/{{p.participant_id}}/matches" >{{p.participant_gamertag}}</a></td>
                 <td><span >{{p.participant_points}}</span></td>
                 <td><a href="/ranking/{{ranking_data.id}}/participant/{{p.participant_id}}/matches" >{{p.set_count}}</a></td>
-                <td><span style="color:white">
-                    {% if p.up_from_last is none %}
-                        {% block no_change %}
-                            <span>-</span>
-                        {% endblock no_change %}
+                <td><span>{{p.set_win_count}}-{{p.set_loss_count}}</span></td>
+                <td>
+                    {% if ((p.participant_points-1500) / p.set_count) > 0 %}
+                        <span style="color:green">{{((p.participant_points-1500) / p.set_count)|round(2)}}</span>
+                    {% else %}
+                        <span style="color:red">{{((p.participant_points-1500) / p.set_count)|round(2)}}</span>
                     {% endif %}
-                    {% if p.up_from_last == True %}
-                        {% block up_change %}
-                            <span>&uarr;</span>
-                        {% endblock up_change %}
-                    {% endif %}
-                    {% if p.up_from_last == False %}
-                        {% block down_change %}
-                            <span>&darr;</span>
-                        {% endblock down_change %}
-                    {% endif %}
-                </span></td>
+                </td>
+                <td><span>{{p.win_score}}-{{p.loss_score}}</span></td>
                 <!--<td><a href="https://www.smash.gg/{{ p.participant_id | replace('_','/') }}" target="_blank">smash.gg</a></td>-->
             </tr>
             {% endfor %}

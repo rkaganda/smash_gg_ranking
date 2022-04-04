@@ -1,5 +1,5 @@
 import logging
-from sqlalchemy import and_, or_
+from sqlalchemy import and_, or_, func
 from typing import Dict
 
 from db import db
@@ -41,17 +41,32 @@ def get_ranking_participants(ranking_id: int, event_id: int, page_params: Dict):
             par_tags[par.id] = par.gamer_tag
 
         for pr in participant_ranking:
-            set_count = session.query(RankingSet).where(
-                and_(or_(RankingSet.loser_id == pr.participant_id, RankingSet.winner_id == pr.participant_id),
-                     RankingSet.ranking_id == ranking.id
-                     )
-            ).count()
+            set_wins = session.query(
+                func.sum(RankingSet.winner_score).label('win_sum'),
+                func.count(RankingSet.winner_score).label('win_count')
+            ).where(
+                    and_(RankingSet.winner_id == pr.participant_id, RankingSet.ranking_id == ranking.id)).first()
+            set_loses = session.query(
+                func.sum(RankingSet.winner_score).label('loss_sum'),
+                func.count(RankingSet.winner_score).label('loss_count')
+            ).where(
+                    and_(RankingSet.loser_id == pr.participant_id, RankingSet.ranking_id == ranking.id)).first()
+            logger.debug(set_loses)
+
+
+
+            set_count = set_wins.win_count + set_loses.loss_count
+
             participants.append({
                 "rank": rank,
                 "participant_id": pr.participant_id,
                 "participant_gamertag": par_tags[pr.participant_id],
                 "participant_points": round(pr.participant_points, 2),
                 "set_count": set_count,
+                "win_score": 0 if set_wins.win_sum is None else set_wins.win_sum,
+                "loss_score": set_loses.loss_sum,
+                "set_win_count": set_wins.win_count,
+                "set_loss_count": set_loses.loss_count,
                 "up_from_last": pr.up_from_last
             })
             rank = rank + 1
