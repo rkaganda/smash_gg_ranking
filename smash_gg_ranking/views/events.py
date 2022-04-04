@@ -1,3 +1,4 @@
+from sqlalchemy import func, tuple_, distinct, select
 import logging
 from typing import Dict
 
@@ -25,13 +26,19 @@ def get_events(ranking_id: int, page_params: Dict):
 
         for re in ranking_events:
             set_count = session.query(RankingSet.id).where(RankingSet.ranking_event_id == re.id).count()
-            # event = graph_query.get_event_attributes(graph_query.parse_event_url(re.event_url))
+            logger.debug(session.query(func.count(distinct(tuple_(RankingSet.winner_id, RankingSet.loser_id)))))
+            winners = select(RankingSet.winner_id.label("participant_id"))
+            losers = select(RankingSet.loser_id.label("participant_id"))
+            q = winners.union(losers).subquery()
+            participant_count = session.query(q).count()
+
             events.append({
                 "id": re.id,
                 "url": re.event_url,
                 "name": re.event_name,
                 "set_count": set_count,
-                "start_at": re.event_datetime.strftime("%Y-%m-%d")
+                "start_at": re.event_datetime.strftime("%Y-%m-%d"),
+                "participant_count": participant_count
             })
 
     return ranking.__dict__, events, paging_info

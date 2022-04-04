@@ -90,7 +90,6 @@ def get_participant_sets(ranking_id: int, event_id: int, participant_id: str, pa
         }
 
         for ps in participant_sets:
-            logger.debug(ps.keys())
             sets.append({
                 "winner_id": ps.RankingSet.winner_id,
                 "winner_gamertag": par_tags[ps.RankingSet.winner_id],

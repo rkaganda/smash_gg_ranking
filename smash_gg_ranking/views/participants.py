@@ -15,15 +15,20 @@ handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(me
 logger.addHandler(handler)
 
 
-def get_ranking_participants(ranking_id: int, page_params: Dict):
+def get_ranking_participants(ranking_id: int, event_id: int, page_params: Dict):
     participants = []
     session = db.get_session()
     with session() as session:
         ranking = session.query(Ranking).where(Ranking.id == ranking_id).first()
 
         participant_ranking = session.query(ParticipantRanking).where(
-            ParticipantRanking.ranking_id == ranking_id).order_by(
-            ParticipantRanking.participant_points.desc())
+            ParticipantRanking.ranking_id == ranking_id)
+
+        # todo filter by event_id
+        if event_id is not None:
+           pass
+
+        participant_ranking= participant_ranking.order_by(ParticipantRanking.participant_points.desc())
 
         participant_ranking, paging_info = paging.get_paging_info(participant_ranking, page_params)
 
