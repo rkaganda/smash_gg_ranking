@@ -76,21 +76,18 @@ def get_participant_sets(ranking_id: int, event_id: int, participant_id: str, pa
         participant_sets = session.query(RankingSet).where(
             or_(RankingSet.loser_id == participant_id, RankingSet.winner_id == participant_id)
         ).order_by(RankingSet.set_datetime.desc())
-        logger.debug("event_id={}".format(event_id))
 
         event_data = None
         if event_id is not None:
             event = session.query(RankingEvent).where(RankingEvent.id == event_id).first()
-            logger.debug("event={}".format(event))
             if event is not None:
                 event_data = event.__dict__
                 event_data['attrib'] = graph_query.get_event_attributes(graph_query.parse_event_url(event_data['event_url']))
                 participant_sets = participant_sets.where(
                     RankingSet.ranking_event_id == event_id
                 )
-                logger.debug("event_data={}".format(event_data))
         else:
-            logger.debug("event_data={}".format(event_data))
+            pass
 
         participant_sets, paging_info = get_paging_info(participant_sets, paging)
 

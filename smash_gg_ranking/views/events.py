@@ -21,14 +21,14 @@ def get_events(ranking_id: int):
         ranking_events = session.query(RankingEvent).where(RankingEvent.ranking_id == ranking_id).all()
         for re in ranking_events:
             set_count = session.query(RankingSet.id).where(RankingSet.ranking_event_id==re.id).count()
-            event = graph_query.get_event_attributes(graph_query.parse_event_url(re.event_url))
+            # event = graph_query.get_event_attributes(graph_query.parse_event_url(re.event_url))
             events.append({
                 "id": re.id,
                 "url": re.event_url,
-                "tournament": event['tournament'],
-                "name": event['name'],
+                "tournament": graph_query.parse_event_url(re.event_url)['tournament'],
+                "name": graph_query.parse_event_url(re.event_url)['event'],
                 "set_count": set_count,
-                "start_at": event['start_at'].strftime("%m/%d/%Y")
+                "start_at": None
             })
 
     return ranking.__dict__, events

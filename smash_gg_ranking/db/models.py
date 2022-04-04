@@ -15,8 +15,8 @@ class Ranking(Base):
     __tablename__ = "{}_ranking".format(config.settings['db_suffix'])
     id = Column(Integer, primary_key=True, autoincrement=True)
     ranking_algorithms_id = Column(Integer, ForeignKey("{}_ranking_algorithms.id".format(config.settings['db_suffix'])))
-    videogame_id = Column(String, nullable=False)
-    name = Column(String)
+    videogame_id = Column(Integer, nullable=False)
+    name = Column(String, unique=True)
 
 
 class RankingEvent(Base):
@@ -24,7 +24,8 @@ class RankingEvent(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     event_id = Column(Integer, nullable=False)
     ranking_id = Column(Integer, ForeignKey("{}_ranking.id".format(config.settings['db_suffix'])))
-    event_url = Column(String, nullable=False, unique=True)
+    event_url = Column(String, nullable=False)
+    __table_args__ = (Index('ranking_event_index', "event_id", "ranking_id", unique=True),)
 
 
 class RankingSet(Base):

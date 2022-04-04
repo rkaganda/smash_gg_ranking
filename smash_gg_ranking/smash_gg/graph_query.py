@@ -43,7 +43,7 @@ def smash_gg_query(query: str, variables: str):
             if r.status_code == 429:
                 logger.error("graph_query RATE LIMIT: {} \n response:{}\n"
                              .format(r.status_code, r.text))
-                time.sleep(60)
+                time.sleep(30)
             else:
                 logger.error("smash graph_query FAILED \n response:{}\n {} \n graph_query:\n{} \n variables:{}\n "
                              .format(r.text, r.status_code, query, variables, ))
@@ -71,6 +71,10 @@ def parse_event_url(full_url: str) -> Dict:
         raise InvalidSmashGGEventURL(full_url)
 
     return {'tournament': tournament_slug, 'event': event_slut}
+
+
+def reform_event_url(event_slugs):
+    return "https://smash.gg/tournament/{}/event/{}".format(event_slugs['tournament'], event_slugs['event'])
 
 
 def get_event_attributes(url_slugs, per_page=20) -> Dict[str, int]:
@@ -149,13 +153,18 @@ def parse_node_slot(node_slots: List, node_set) -> Dict:
         if node_set['winner_score'] <= 0 or node_set['loser_score'] < 0:  # check for DQ
             node_set = None
     except TypeError as e:
-        # no high score
-        # logger.exception(e)
-        # logger.debug(node_slots)
         node_set = None
     except AttributeError as e:
         logger.exception(e)
-        logger.debug("node_slots={}".format(node_slots))
+        logger.error("node_slots={}".format(node_slots))
+        node_set = None
+    except InvalidSetNode as e:
+        logger.exception(e)
+        logger.error("node_slots={}".format(node_slots))
+        node_set = None
+    except IndexError as e:
+        logger.exception(e)
+        logger.error("node_slots={}".format(node_slots))
         node_set = None
 
     return node_set
@@ -164,15 +173,19 @@ def parse_node_slot(node_slots: List, node_set) -> Dict:
 def parse_set_nodes(set_nodes: List) -> List:
     event_sets = []
     for node in set_nodes:
-        node_set = {
-            'set_id': node['id'],
-            'set_datetime': datetime.datetime.fromtimestamp(node['completedAt'])
-        }
-        if len(node['slots']) > 2:  # if more than two entrants
-            raise InvalidSetNode(node['slots'])
-        node_set = parse_node_slot(node['slots'], node_set)
-        if node_set is not None:  # if non set was a DQ
-            event_sets.append(node_set)
+        try:
+            node_set = {
+                'set_id': node['id'],
+                'set_datetime': datetime.datetime.fromtimestamp(node['completedAt'])
+            }
+            if len(node['slots']) > 2:  # if more than two entrants
+                raise InvalidSetNode(node['slots'])
+            node_set = parse_node_slot(node['slots'], node_set)
+            if node_set is not None:  # if non set was a DQ
+                event_sets.append(node_set)
+        except TypeError as e:
+            logger.exception(e)
+            logger.error(e)
 
     return event_sets
 
@@ -182,12 +195,17 @@ def parse_entrant_set(entrant_set: List) -> List:
     for es in entrant_set:
         if 'participants' in es:
             for par in es['participants']:
-                if par['user']['slug'] is not None:
-                    user_set.append({
-                        'id': par['user']['slug'].replace("/", "_"),
-                        'gamer_tag': par['gamerTag'],
-                        'smash_gg_url': "http://www.smash.gg/{}".format(par['user']['slug'])
-                    })
+                try:
+                    if par['user']['slug'] is not None:
+                        user_set.append({
+                            'id': par['user']['slug'].replace("/", "_"),
+                            'gamer_tag': par['gamerTag'],
+                            'smash_gg_url': "http://www.smash.gg/{}".format(par['user']['slug'])
+                        })
+                except TypeError as e:
+                    logger.exception(e)
+                    logger.error("es={}".format(es))
+                    logger.error("par={}".format(par))
     return user_set
 
 
@@ -242,6 +260,7 @@ def get_users_from_event(url_slugs: Dict, per_page=40) -> List:
     """
     user_sets = []
     if config.settings['show_progress'] == 'True':
+        print("get_users_from_event")
         pages_enum = tqdm(range(1, page_count+1))
     else:
         pages_enum = range(1, page_count+1)
@@ -293,6 +312,7 @@ def get_set_pages_from_event(url_slugs: Dict, page_count: int, per_page=20) -> L
         """
     event_sets = []
     if config.settings['show_progress'] == 'True':
+        print("get_set_pages_from_event")
         pages_enum = tqdm(range(1, page_count+1))
     else:
         pages_enum = range(1, page_count+1)
@@ -308,6 +328,91 @@ def get_set_pages_from_event(url_slugs: Dict, page_count: int, per_page=20) -> L
         event_sets.append(parse_set_nodes(event_page['data']['event']['sets']['nodes']))  # parse the event set page
 
     event_sets = list(itertools.chain.from_iterable(event_sets))  # concatenate event page lists
+
+    return event_sets
+
+
+def parse_event_nodes(event_nodes):
+    events = []
+    for en in event_nodes:
+        events.append({
+            "event_slug": en['slug'],
+            "videogame_id": en['videogame']['id'],
+            "videogame_name": en['videogame']['displayName']
+        })
+    return events
+
+
+def get_events_from_user_slug(user_slug: str, per_page=20) -> List:
+    page_query = """
+            query QueryUser($user_slug: String, $perPage: Int) {
+                user(slug: $user_slug) {
+                    events(query: {
+                        perPage: $perPage
+                        }) {
+                            pageInfo {
+                            total
+                            totalPages
+                        }
+                    }
+                }
+            }
+            """
+    page_vars = """
+        {{
+          "user_slug":"{}",
+          "perPage": {}
+        }}
+    """.format(user_slug, per_page)
+
+    page_count = json.loads(smash_gg_query(page_query, page_vars))  # query smash_gg
+    page_count = page_count['data']['user']['events']['pageInfo']['totalPages']
+
+    query = """
+        query QueryUser($user_slug: String, $page:Int, $perPage: Int) {
+            user(slug: $user_slug) {
+                id
+                name
+                slug
+                events(query: {
+                    page: $page
+                    perPage: $perPage
+                    }) {
+                        pageInfo {
+                        total
+                        totalPages
+                    }
+                    nodes {
+                        id
+                        name
+                        slug
+                        videogame {
+                            id
+                            displayName
+                        }
+                    }
+                }
+            }
+        }
+        """
+    user_events = []
+    if config.settings['show_progress'] == 'True':
+        print("get_events_from_user_slug")
+        pages_enum = tqdm(range(1, page_count+1))
+    else:
+        pages_enum = range(1, page_count+1)
+    for page in pages_enum:
+        variables = """
+            {{
+                "user_slug":"{}",
+                "page": {},
+                "perPage": {}
+            }}
+            """.format(user_slug, page, per_page)
+        event_page = json.loads(smash_gg_query(query, variables))  # query smash_gg for the event page
+        user_events.append(parse_event_nodes(event_page['data']['user']['events']['nodes']))  # parse the event set page
+
+    event_sets = list(itertools.chain.from_iterable(user_events))  # concatenate event page lists
 
     return event_sets
 

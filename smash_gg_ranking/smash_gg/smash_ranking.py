@@ -18,6 +18,10 @@ class EventRankingVideoMismatch(Exception):
     pass
 
 
+class DuplicateRankingEvent(Exception):
+    pass
+
+
 def add_ranking_algorithm(name: str) -> id:
     session = db.get_session()
     ranking_algorithm = RankingAlgorithm(name=name)
@@ -48,7 +52,25 @@ def add_ranking(ranking_name: str, ranking_algorithm_name: str, videogame_id: in
     return ranking_id
 
 
+def event_ranking_already_exists(ranking_name, event_slugs):
+    session = db.get_session()
+
+    with session() as session:
+        ranking = session.query(Ranking).where(Ranking.name == ranking_name).first()
+
+        ranking_event = session.query(RankingEvent.id).where(and_(
+            RankingEvent.event_url == graph_query.reform_event_url(event_slugs),
+            RankingEvent.ranking_id == ranking.id
+        )).first()
+
+    return False if (ranking_event is None) else True
+
+
 def add_event_to_ranking(full_url, ranking_name):
+    event_slugs = graph_query.parse_event_url(full_url)
+    if event_ranking_already_exists(ranking_name, event_slugs):
+        return False
+
     # get users in event
     event_users = graph_query.get_users_from_event(graph_query.parse_event_url(full_url))
 
@@ -59,31 +81,41 @@ def add_event_to_ranking(full_url, ranking_name):
 
     with session() as session:
         ranking = session.query(Ranking).where(Ranking.name == ranking_name).first()
-        if int(event['videogame']['id']) != int(ranking.videogame_id):
-            e = EventRankingVideoMismatch(
-                "event['videogame']['id']={}, ranking.videogame_id={}".format(event['videogame']['id'],
-                                                                              ranking.videogame_id))
+        try:
+            if int(event['videogame']['id']) != int(ranking.videogame_id):
+                e = EventRankingVideoMismatch(
+                    "event['videogame']['id']={}, ranking.videogame_id={}".format(event['videogame']['id'],
+                                                                                  ranking.videogame_id))
+                logger.exception(e)
+                raise e
+            for event_user in event_users:
+                session.merge(Participant(**event_user))
+
+            ranking_event = RankingEvent(
+                event_id=event['event_id'],
+                event_url=graph_query.reform_event_url(event_slugs),
+                ranking_id=ranking.id
+            )
+            session.add(ranking_event)
+            session.flush()
+            ranking_event_id = ranking_event.id
+
+            for event_set in ranking_event_sets:
+                event_set['ranking_event_id'] = ranking_event_id
+                event_set['ranking_id'] = ranking.id
+                event_set['winner_change'] = None
+                event_set['loser_change'] = None
+
+                ranking_sets.append(RankingSet(**event_set))
+            session.bulk_save_objects(ranking_sets)
+
+            session.commit()
+            session.close()
+        except AttributeError as e:
             logger.exception(e)
+            logger.error("event={}".format(event))
             raise e
-        for event_user in event_users:
-            session.merge(Participant(**event_user))
-
-        ranking_event = RankingEvent(event_id=event['event_id'], event_url=full_url, ranking_id=ranking.id)
-        session.add(ranking_event)
-        session.flush()
-        ranking_event_id = ranking_event.id
-
-        for event_set in ranking_event_sets:
-            event_set['ranking_event_id'] = ranking_event_id
-            event_set['ranking_id'] = ranking.id
-            event_set['winner_change'] = None
-            event_set['loser_change'] = None
-
-            ranking_sets.append(RankingSet(**event_set))
-        session.bulk_save_objects(ranking_sets)
-
-        session.commit()
-        session.close()
+    return True
 
 
 def calculate_ranking(ranking_name):
