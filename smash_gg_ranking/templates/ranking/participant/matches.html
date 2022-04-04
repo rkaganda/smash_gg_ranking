@@ -84,7 +84,7 @@
             <nav aria-label="Page nav" class="" >
                 <ul class="pagination justify-content-center">
                     {% if paging_info.page_num == 1 %}
-                        <li class="page-item disabled bg-dark">
+                        <li class="page-item disabled ">
                             <a class="page-link" href="#" aria-disabled="true"><<</a>
                         </li>
                     {% else %}
@@ -112,7 +112,7 @@
                     </li>
                     {% endfor %}
                     {% if paging_info.page_num == paging_info.max_page %}
-                        <li class="page-item disabled bg-dark">
+                        <li class="page-item disabled ">
                             <a class="page-link" href="#" aria-disabled="true">>></a>
                         </li>
                     {% else %}
