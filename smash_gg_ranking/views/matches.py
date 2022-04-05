@@ -61,7 +61,7 @@ def get_participant_sets(ranking_id: int, event_id: int, participant_id: str, pa
 
         participant_sets = session.query(RankingSet, RankingEvent.event_name).where(
             or_(RankingSet.loser_id == participant_id, RankingSet.winner_id == participant_id)
-        ).filter(RankingSet.ranking_event_id == RankingEvent.id).order_by(RankingSet.set_datetime.desc())
+        ).where(RankingSet.ranking_id == ranking.id).order_by(RankingSet.set_datetime.desc())
 
         event_data = None
         if event_id is not None:
