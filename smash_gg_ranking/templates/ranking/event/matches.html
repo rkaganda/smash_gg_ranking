@@ -2,15 +2,14 @@
 {% block title %}Ranking Event Matches{% endblock %}
 {% block content %}
     <div class="container">
-        <h3 style="color:white">
-            <a href="/ranking/">Rankings</a>
-                <span> > </span>
-            <a href="/ranking/"> {{ranking_data.name}}</a>
-                <span> > </span>
-            <span> {{event_data.event_name}} </span>
-            <span>  > </span>
-            <span> Matches </span>
-        </h3>
+        <h4 style="color:gray;">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/ranking/" >Rankings</a></li>
+                <li class="breadcrumb-item"><span> {{ranking_data.name}}</span></li>
+                <li class="breadcrumb-item"><a href="{{url_for('view_events', ranking_id=ranking_data.id, event_id=event_data.id)}}"> Events </a></li>
+                <li class="breadcrumb-item"><span class="active" style="color:white;"> {{event_data.event_name}} </span></li>
+            </ol>
+            </h4>
         <p class="lead"></p>
         <table class="table table-striped table-dark">
             <thead>
