@@ -1,4 +1,5 @@
 import logging
+import operator
 
 from db import db
 from db.models import Ranking, RankingEvent, RankingSet, RankingAlgorithm, ParticipantRanking, Videogame
@@ -37,6 +38,10 @@ def get_rankings():
 
             set_count = session.query(RankingSet.id).where(
                 RankingSet.ranking_id == r.id).count()
+            # logger.debug(r.name)
+            # logger.debug(participant_count)
+            if participant_count < 1:
+                continue
             rank_views.append({
                 "name": r.name,
                 "id": r.id,
@@ -46,6 +51,8 @@ def get_rankings():
                 "match_count": set_count,
                 "ranking_algorithm_name": ranking_algorithm_name[0]
             })
+
+        else:rank_views.sort(key=operator.itemgetter('participant_count'), reverse=True)
         session.close()
 
     return rank_views
