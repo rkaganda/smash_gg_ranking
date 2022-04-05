@@ -47,7 +47,6 @@ def add_videogame(event_data: Dict):
     session = db.get_session()
 
     with session() as session:
-        logger.debug("event_data={}".format(event_data))
         session.add(Videogame(
             id=event_data['videogame_id'], smash_gg_id=event_data['videogame_id'], name=event_data['videogame_name']
         ))

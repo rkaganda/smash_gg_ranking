@@ -59,10 +59,16 @@ def get_participant_sets(ranking_id: int, event_id: int, participant_id: str, pa
     with session() as session:
         ranking = session.query(Ranking).where(Ranking.id == ranking_id).first()
 
-        participant_sets = session.query(RankingSet, RankingEvent.event_name).where(
-            or_(RankingSet.loser_id == participant_id, RankingSet.winner_id == participant_id)
-        ).where(RankingSet.ranking_id == ranking.id).order_by(RankingSet.set_datetime.desc())
+        participant_sets = session.query(RankingSet, RankingEvent.event_name).join(
+            RankingEvent, RankingEvent.id == RankingSet.ranking_event_id).filter(
+            and_(RankingSet.ranking_id == ranking_id,
+                 or_(RankingSet.loser_id == participant_id, RankingSet.winner_id == participant_id))
+        ).order_by(RankingSet.set_datetime.desc())
 
+        # participant_sets = session.query(RankingSet).where(
+        #     and_(RankingSet.ranking_id == ranking_id,
+        #         or_(RankingSet.loser_id == participant_id, RankingSet.winner_id == participant_id)))
+        # participant_sets.order_by(RankingSet.set_datetime.desc())
         event_data = None
         if event_id is not None:
             event = session.query(RankingEvent).where(RankingEvent.id == event_id).first()
@@ -86,6 +92,7 @@ def get_participant_sets(ranking_id: int, event_id: int, participant_id: str, pa
             "id": participant_id,
             "gamertag": par_tags[participant_id]
         }
+        participant_sets = participant_sets.all()
 
         for ps in participant_sets:
             sets.append({
