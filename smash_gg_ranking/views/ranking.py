@@ -26,13 +26,15 @@ def get_rankings():
             if len(ranking_events) == 0:
                 break
             # event_info = graph_query.get_event_attributes(graph_query.parse_event_url(ranking_events[0].event_url))
-            # TODO fix later
+
             videogame_name = session.query(Videogame.name).where(Videogame.smash_gg_id == r.videogame_id).scalar()
-            logger.debug(videogame_name)
+
+            # TODO fix after updating AWS db
             if videogame_name is None:
                 videogame_name = 'Guilty Gear: Strive'
+                videogame_name = "hmm"
 
-            participant_count = session.query(ParticipantRanking.id).where(ParticipantRanking.ranking_id==r.id).count()
+            participant_count = session.query(ParticipantRanking.id).where(ParticipantRanking.ranking_id == r.id).count()
 
             set_count = session.query(RankingSet.id).where(
                 RankingSet.ranking_id == r.id).count()

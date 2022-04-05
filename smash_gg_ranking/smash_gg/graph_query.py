@@ -77,7 +77,7 @@ def reform_event_url(event_slugs):
     return "https://smash.gg/tournament/{}/event/{}".format(event_slugs['tournament'], event_slugs['event'])
 
 
-def get_event_attributes(url_slugs, per_page=20) -> Dict[str, int]:
+def get_event_attributes(url_slugs, per_page=20) -> Dict[str, str]:
     variables = """
         {{
             "event_slug":"tournament/{}/event/{}",
@@ -120,11 +120,8 @@ def get_event_attributes(url_slugs, per_page=20) -> Dict[str, int]:
         "start_at": datetime.datetime.fromtimestamp(event['startAt']),
         "page_count": event['sets']['pageInfo']['totalPages'],
         "entrants_count": event['numEntrants'],
-        "videogame": {
-            "id": event['videogame']['id'],
-            "display_name": event['videogame']['displayName'],
-            "images": event['videogame']['images'][0]['url'],
-        }
+        "videogame_id": event['videogame']['id'],
+        "videogame_name": event['videogame']['displayName']
     }
 
 

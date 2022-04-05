@@ -1,9 +1,12 @@
 from sqlalchemy import select, and_
 import logging
+from typing import Dict
+from datetime import datetime
 
 from smash_gg_ranking.config import config
 from smash_gg_ranking.smash_gg import graph_query
-from smash_gg_ranking.db.models import Ranking, RankingSet, RankingEvent, RankingAlgorithm, ParticipantRanking, Participant
+from smash_gg_ranking.db.models import Ranking, RankingSet, RankingEvent, RankingAlgorithm, ParticipantRanking, \
+    Participant, Videogame
 from smash_gg_ranking.db import db
 from smash_gg_ranking.ranking import elo
 
@@ -22,6 +25,10 @@ class DuplicateRankingEvent(Exception):
     pass
 
 
+class RankingEventOutOfDateRange(Exception):
+    pass
+
+
 def add_ranking_algorithm(name: str) -> id:
     session = db.get_session()
     ranking_algorithm = RankingAlgorithm(name=name)
@@ -36,17 +43,58 @@ def add_ranking_algorithm(name: str) -> id:
     return ranking_algorithm_id
 
 
-def add_ranking(ranking_name: str, ranking_algorithm_name: str, videogame_id: int) -> int:
+def add_videogame(event_data: Dict):
     session = db.get_session()
 
     with session() as session:
+        logger.debug("event_data={}".format(event_data))
+        session.add(Videogame(
+            id=event_data['videogame_id'], smash_gg_id=event_data['videogame_id'], name=event_data['videogame_name']
+        ))
+        session.commit()
+
+    return event_data['videogame_id']
+
+
+def add_ranking(ranking_name: str, ranking_algorithm_name: str, full_event_url: str,
+                start_datetime: datetime = None, end_datetime: datetime = None) -> int:
+    session = db.get_session()
+
+    event_data = graph_query.get_event_attributes(graph_query.parse_event_url(full_event_url))
+
+    with session() as session:
+        videogame = session.query(Videogame).where(Videogame.smash_gg_id == event_data['videogame_id']).first()
+        if videogame is None:
+            videogame_id = add_videogame(event_data)
+        else:
+            videogame_id = videogame.smash_gg_id
+
         ranking_algorithm = session.query(RankingAlgorithm).where(
             RankingAlgorithm.name == ranking_algorithm_name).first()
-        ranking = Ranking(name=ranking_name, ranking_algorithms_id=ranking_algorithm.id, videogame_id=videogame_id)
+        if ranking_algorithm is None:
+            ranking_algorithms_id = add_ranking_algorithm("elo")
+        else:
+            ranking_algorithms_id = ranking_algorithm.id
+
+        ranking = Ranking(
+            name=ranking_name, ranking_algorithms_id=ranking_algorithms_id, videogame_id=videogame_id,
+            start_datetime=start_datetime, end_datetime=end_datetime
+        )
         session.add(ranking)
         session.flush()
         ranking_id = ranking.id
         session.commit()
+
+        try:
+            if not add_event_to_ranking(full_url=full_event_url, ranking_name=ranking_name):
+                session.delete(ranking)
+                session.commit()
+        except Exception as e:
+            session.delete(ranking)
+            session.commit()
+            session.commit()
+            raise e
+
         session.close()
 
     return ranking_id
@@ -66,13 +114,37 @@ def event_ranking_already_exists(ranking_name, event_slugs):
     return False if (ranking_event is None) else True
 
 
+def event_is_valid_for_ranking(ranking_name, event_slugs: Dict) -> bool:
+    event_attributes = graph_query.get_event_attributes(event_slugs)
+    session = db.get_session()
+
+    with session() as session:
+        ranking = session.query(Ranking).where(Ranking.name == ranking_name).first()
+        if int(event_attributes['videogame_id']) != int(ranking.videogame_id):
+            e = EventRankingVideoMismatch(
+                "event['videogame_id']={}, ranking.videogame_id={}".format(event_attributes['videogame_id'], ranking.videogame_id))
+            logger.exception(e)
+            raise e
+
+        if ranking.start_datetime is not None:
+            if ranking.start_datetime > event_attributes['start_at']:
+                raise RankingEventOutOfDateRange("{} {}".format(ranking, event_attributes))
+        if ranking.end_datetime is not None:
+            if ranking.end_datetime < event_attributes['start_at']:
+                raise RankingEventOutOfDateRange("{} {}".format(ranking, event_attributes))
+    return True
+
+
 def add_event_to_ranking(full_url, ranking_name):
     event_slugs = graph_query.parse_event_url(full_url)
     if event_ranking_already_exists(ranking_name, event_slugs):
         return False
 
+    if not event_is_valid_for_ranking(ranking_name=ranking_name, event_slugs=event_slugs):
+        return False
+
     # get users in event
-    event_users = graph_query.get_users_from_event(graph_query.parse_event_url(full_url))
+    event_users = graph_query.get_users_from_event(event_slugs)
 
     event, ranking_event_sets = graph_query.get_event_id_and_sets(full_url)
 
@@ -82,12 +154,6 @@ def add_event_to_ranking(full_url, ranking_name):
     with session() as session:
         ranking = session.query(Ranking).where(Ranking.name == ranking_name).first()
         try:
-            if int(event['videogame']['id']) != int(ranking.videogame_id):
-                e = EventRankingVideoMismatch(
-                    "event['videogame']['id']={}, ranking.videogame_id={}".format(event['videogame']['id'],
-                                                                                  ranking.videogame_id))
-                logger.exception(e)
-                raise e
             for event_user in event_users:
                 session.merge(Participant(**event_user))
 
@@ -154,7 +220,3 @@ def calculate_ranking(ranking_name):
                     participant_ranking.up_from_last = None
         session.commit()
         session.close()
-
-
-
-

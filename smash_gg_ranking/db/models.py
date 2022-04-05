@@ -19,6 +19,7 @@ class Videogame(Base):
     name = Column(String, unique=True)
     __table_args__ = {'extend_existing': True}
 
+
 class Ranking(Base):
     __tablename__ = "{}_ranking".format(config.settings['db_suffix'])
     __table_args__ = {'extend_existing': True}
@@ -26,6 +27,8 @@ class Ranking(Base):
     ranking_algorithms_id = Column(Integer, ForeignKey("{}_ranking_algorithms.id".format(config.settings['db_suffix'])))
     videogame_id = Column(Integer, nullable=False)
     name = Column(String, unique=True)
+    start_datetime = Column(DateTime)
+    end_datetime = Column(DateTime)
 
 
 class RankingEvent(Base):
@@ -36,7 +39,7 @@ class RankingEvent(Base):
     event_url = Column(String, nullable=False)
     event_name = Column(String, nullable=False)
     event_datetime = Column(DateTime, nullable=False)
-    __table_args__ = (Index('ranking_event_index', "event_id", "ranking_id", unique=True), {'extend_existing': True})
+    __table_args__ = (Index('{}_ranking_event_index'.format(config.settings['db_suffix']), "event_id", "ranking_id", unique=True), {'extend_existing': True})
 
 
 class RankingSet(Base):
@@ -55,7 +58,7 @@ class RankingSet(Base):
     loser_score = Column(Integer, nullable=False)
     loser_points = Column(Float)
     loser_change = Column(Float)
-    __table_args__ = (Index('ranking_set_index', "ranking_event_id", "set_id"), {'extend_existing': True})
+    __table_args__ = (Index('{}_ranking_set_index'.format(config.settings['db_suffix']), "ranking_event_id", "set_id"), {'extend_existing': True})
 
 
 class ParticipantRanking(Base):

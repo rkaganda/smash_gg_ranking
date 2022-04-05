@@ -33,7 +33,6 @@ def populate_ranking_from_participants(ranking_name, event_count=1):
             events = scrape_events_from_user(participant_id[0])
             for event in events:
                 if int(event['videogame_id']) == int(ranking.videogame_id):
-                    # print(event['event_slug'])
                     if smash_ranking.add_event_to_ranking(event['event_slug'], ranking.name):
                         event_added = event_added + 1
                         print("event_added={}".format(event_added))
