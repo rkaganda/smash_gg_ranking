@@ -5,7 +5,6 @@ from typing import Dict
 
 from db import db
 from db.models import Ranking, RankingSet, RankingEvent, Participant
-from smash_gg import graph_query
 from views import paging
 from config import config
 

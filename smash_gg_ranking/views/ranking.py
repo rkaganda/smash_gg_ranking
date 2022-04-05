@@ -2,7 +2,6 @@ import logging
 
 from db import db
 from db.models import Ranking, RankingEvent, RankingSet, RankingAlgorithm, ParticipantRanking, Videogame
-from smash_gg import graph_query
 from config import config
 
 logger = logging.getLogger('views/ranking')

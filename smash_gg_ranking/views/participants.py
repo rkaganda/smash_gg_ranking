@@ -4,7 +4,6 @@ from typing import Dict
 
 from db import db
 from db.models import Ranking, RankingEvent, ParticipantRanking, RankingSet, Participant
-from smash_gg import graph_query
 from config import config
 from views import paging
 
@@ -34,6 +33,7 @@ def get_ranking_participants(ranking_id: int, event_id: int, page_params: Dict):
             event = session.query(RankingEvent).where(RankingEvent.id == event_id).first()
             event_data = event.__dict__
 
+        # participant_ranking = participant_ranking.order_by(ParticipantRanking.participant_points.desc())
         participant_ranking = participant_ranking.order_by(ParticipantRanking.participant_points.desc())
 
         participant_ranking, paging_info = paging.get_paging_info(participant_ranking, page_params)
