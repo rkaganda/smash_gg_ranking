@@ -1,9 +1,10 @@
 import logging
 from sqlalchemy.exc import IntegrityError
+import random
 
 from config import config
 from smash_gg_ranking.db import db
-from smash_gg_ranking.db.models import Ranking, ParticipantRanking
+from smash_gg_ranking.db.models import Ranking, ParticipantRanking, Participant
 from smash_gg import graph_query
 from smash_gg import smash_ranking
 
@@ -22,23 +23,41 @@ def scrape_events_from_user(user_id):
     return events
 
 
-def populate_ranking_from_participants(ranking_name, event_count=1):
-    event_added = 0
+def rank_event(event):
     session = db.get_session()
 
     with session() as session:
-        ranking = session.query(Ranking).where(Ranking.name == ranking_name).first()
-        participant_ids = session.query(ParticipantRanking.participant_id).where(ParticipantRanking.ranking_id==ranking.id).all()
-        for participant_id in participant_ids:
-            events = scrape_events_from_user(participant_id[0])
-            for event in events:
-                if int(event['videogame_id']) == int(ranking.videogame_id):
-                    if smash_ranking.add_event_to_ranking(event['event_slug'], ranking.name):
-                        event_added = event_added + 1
-                        print("event_added={}".format(event_added))
-                    else:
-                        pass
-                if event_count <= event_added:
-                    break
-            if event_count <= event_added:
-                break
+        ranking = session.query(Ranking).where(Ranking.videogame_id == event['videogame_id']).first()
+        full_url = graph_query.reform_event_url(graph_query.parse_event_url(event['event_slug'])) # holy sheet
+
+        if ranking is None:
+            print("adding ranking and event")
+            print(event)
+            smash_ranking.add_ranking(
+                ranking_name=event['videogame_name'],
+                ranking_algorithm_name="elo",
+                full_event_url=full_url)
+        else:
+            print("adding event")
+            print(event)
+            smash_ranking.add_event_to_ranking(
+                full_url=full_url,
+                ranking_name=event['videogame_name']
+            )
+        smash_ranking.calculate_ranking(event['videogame_name'])
+        print("FINISHED={}".format(event))
+
+
+def scrape_events_from_participants():
+    session = db.get_session()
+
+    with session() as session:
+        participants = session.query(Participant).all()
+        participant = random.choice(participants)
+
+        events = scrape_events_from_user(participant.id)
+    for event in events:
+        rank_event(event)
+
+
+

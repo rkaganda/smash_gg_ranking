@@ -95,6 +95,10 @@ def get_participant_sets(ranking_id: int, event_id: int, participant_id: str, pa
         participant_sets = participant_sets.all()
 
         for ps in participant_sets:
+            # if ranking hasn't been calculated
+            # TODO some kind of filler
+            if ps.RankingSet.winner_points is None or ps.RankingSet.loser_points is None:
+                continue
             sets.append({
                 "winner_id": ps.RankingSet.winner_id,
                 "winner_gamertag": par_tags[ps.RankingSet.winner_id],

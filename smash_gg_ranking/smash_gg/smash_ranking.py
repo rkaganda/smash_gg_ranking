@@ -104,6 +104,8 @@ def event_ranking_already_exists(ranking_name, event_slugs):
 
     with session() as session:
         ranking = session.query(Ranking).where(Ranking.name == ranking_name).first()
+        if ranking is None:
+            return False
 
         ranking_event = session.query(RankingEvent.id).where(and_(
             RankingEvent.event_url == graph_query.reform_event_url(event_slugs),
@@ -114,23 +116,30 @@ def event_ranking_already_exists(ranking_name, event_slugs):
 
 
 def event_is_valid_for_ranking(ranking_name, event_slugs: Dict) -> bool:
-    event_attributes = graph_query.get_event_attributes(event_slugs)
-    session = db.get_session()
+    try:
+        event_attributes = graph_query.get_event_attributes(event_slugs)
+        logger.debug()
+        session = db.get_session()
 
-    with session() as session:
-        ranking = session.query(Ranking).where(Ranking.name == ranking_name).first()
-        if int(event_attributes['videogame_id']) != int(ranking.videogame_id):
-            e = EventRankingVideoMismatch(
-                "event['videogame_id']={}, ranking.videogame_id={}".format(event_attributes['videogame_id'], ranking.videogame_id))
-            logger.exception(e)
-            raise e
+        with session() as session:
+            ranking = session.query(Ranking).where(Ranking.name == ranking_name).first()
+            if int(event_attributes['videogame_id']) != int(ranking.videogame_id):
+                e = EventRankingVideoMismatch(
+                    "event['videogame_id']={}, ranking.videogame_id={}".format(event_attributes['videogame_id'], ranking.videogame_id))
+                logger.exception(e)
+                raise e
 
-        if ranking.start_datetime is not None:
-            if ranking.start_datetime > event_attributes['start_at']:
-                raise RankingEventOutOfDateRange("{} {}".format(ranking, event_attributes))
-        if ranking.end_datetime is not None:
-            if ranking.end_datetime < event_attributes['start_at']:
-                raise RankingEventOutOfDateRange("{} {}".format(ranking, event_attributes))
+            if ranking.start_datetime is not None:
+                if ranking.start_datetime > event_attributes['start_at']:
+                    raise RankingEventOutOfDateRange("{} {}".format(ranking, event_attributes))
+            if ranking.end_datetime is not None:
+                if ranking.end_datetime < event_attributes['start_at']:
+                    raise RankingEventOutOfDateRange("{} {}".format(ranking, event_attributes))
+    except Exception as e:
+        logger.exception(e)
+        logger.error("event_slugs={}".format(event_slugs))
+        logger.error("ranking_name={}".format(ranking_name))
+        logger.error("event_attributes={}".format(event_attributes))
     return True
 
 

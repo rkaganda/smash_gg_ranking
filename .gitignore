@@ -6,3 +6,5 @@
 /TODO
 /data_input.py
 *.pyc
+/scrape_sfv.py
+/melty_scrape.py
